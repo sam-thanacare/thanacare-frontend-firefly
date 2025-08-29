@@ -1,0 +1,17 @@
+services:
+  thanacare-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      - THANACARE_BACKEND=${THANACARE_BACKEND:-http://localhost:8080}
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - thanacare-network
+
+networks:
+  thanacare-network:
+    driver: bridge

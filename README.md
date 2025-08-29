@@ -1,8 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Thanacare Frontend
+
+A modern healthcare platform frontend built with Next.js, featuring Redux state management and dark theme support.
+
+## Features
+
+- 🔐 **Authentication**: Secure login system with Redux state management
+- 🎨 **Dark Theme**: Full dark/light theme support with system preference detection
+- 🐳 **Docker Support**: Production-ready containerization
+- ⚡ **Modern Stack**: Next.js 15, React 19, TypeScript, and Tailwind CSS
+- 📱 **Responsive Design**: Mobile-first design with shadcn/ui components
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- npm, yarn, or pnpm
+
+### Installation
+
+1. Clone the repository and install dependencies:
+
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+```
+
+2. Set up environment variables:
+
+Create a `.env.local` file in the root directory:
+
+```env
+THANACARE_BACKEND=http://localhost:8080
+```
+
+### Development
+
+Run the development server:
 
 ```bash
 npm run dev
@@ -10,15 +47,27 @@ npm run dev
 yarn dev
 # or
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser. The app will automatically redirect to the login page.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Docker Deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Build and run with Docker:
+
+```bash
+# Build the image
+docker build -t thanacare-frontend .
+
+# Run the container
+docker run -p 3000:3000 -e THANACARE_BACKEND=http://your-backend-url thanacare-frontend
+```
+
+Or use Docker Compose:
+
+```bash
+docker-compose up --build
+```
 
 ## Learn More
 
