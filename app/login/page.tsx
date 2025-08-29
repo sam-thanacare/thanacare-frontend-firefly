@@ -1,13 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-} from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-
 
 import {
   Form,
@@ -95,24 +90,36 @@ const registerSchema = z
     message: "Passwords don't match",
     path: ['confirmPassword'],
   })
-  .refine((data) => {
-    if (data.role === 'trainer' && (!data.organizationId || data.organizationId.trim() === '')) {
-      return false;
+  .refine(
+    (data) => {
+      if (
+        data.role === 'trainer' &&
+        (!data.organizationId || data.organizationId.trim() === '')
+      ) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: 'Organization ID is required for trainers',
+      path: ['organizationId'],
     }
-    return true;
-  }, {
-    message: "Organization ID is required for trainers",
-    path: ['organizationId'],
-  })
-  .refine((data) => {
-    if (data.role === 'member' && (!data.familyId || data.familyId.trim() === '')) {
-      return false;
+  )
+  .refine(
+    (data) => {
+      if (
+        data.role === 'member' &&
+        (!data.familyId || data.familyId.trim() === '')
+      ) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: 'Family ID is required for members',
+      path: ['familyId'],
     }
-    return true;
-  }, {
-    message: "Family ID is required for members",
-    path: ['familyId'],
-  });
+  );
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -143,7 +150,7 @@ export default function LoginPage() {
       confirmPassword: '',
       role: 'member',
       organizationId: '',
-      familyId: ''
+      familyId: '',
     },
   });
 
@@ -543,10 +550,15 @@ export default function LoginPage() {
                                         id="member"
                                         value="member"
                                         checked={field.value === 'member'}
-                                        onChange={() => field.onChange('member')}
+                                        onChange={() =>
+                                          field.onChange('member')
+                                        }
                                         className="text-primary"
                                       />
-                                      <label htmlFor="member" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                      <label
+                                        htmlFor="member"
+                                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                      >
                                         Member
                                       </label>
                                     </div>
@@ -556,10 +568,15 @@ export default function LoginPage() {
                                         id="trainer"
                                         value="trainer"
                                         checked={field.value === 'trainer'}
-                                        onChange={() => field.onChange('trainer')}
+                                        onChange={() =>
+                                          field.onChange('trainer')
+                                        }
                                         className="text-primary"
                                       />
-                                      <label htmlFor="trainer" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                      <label
+                                        htmlFor="trainer"
+                                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                      >
                                         Trainer
                                       </label>
                                     </div>
