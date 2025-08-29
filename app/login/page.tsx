@@ -5,11 +5,10 @@ import {
   Card,
   CardContent,
   CardFooter,
-  CardHeader,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 
-import { Checkbox } from '@/components/ui/checkbox';
+
 import {
   Form,
   FormControl,
@@ -35,11 +34,9 @@ import {
 import { ThemeToggle } from '@/components/theme-toggle';
 import {
   NavigationMenu,
-  NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
 import {
   Tooltip,
@@ -59,14 +56,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Badge } from '@/components/ui/badge';
+
 import { Loader2 } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Invalid email address' }),
   password: z
     .string()
-    .min(6, { message: 'Password must be at least 6 characters' }),
+    .min(8, { message: 'Password must be at least 8 characters' }),
   remember: z.boolean().optional(),
 });
 
@@ -80,13 +77,17 @@ const forgotSchema = z.object({
 // Add schema for register
 const registerSchema = z
   .object({
+    name: z.string().min(1, { message: 'Name is required' }),
     email: z.string().email({ message: 'Invalid email address' }),
     password: z
       .string()
-      .min(6, { message: 'Password must be at least 6 characters' }),
+      .min(8, { message: 'Password must be at least 8 characters' }),
     confirmPassword: z
       .string()
-      .min(6, { message: 'Password must be at least 6 characters' }),
+      .min(8, { message: 'Password must be at least 8 characters' }),
+    role: z.enum(['admin', 'trainer', 'member'], {
+      message: 'Please select a user type',
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -115,7 +116,7 @@ export default function LoginPage() {
 
   const registerForm = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { email: '', password: '', confirmPassword: '' },
+    defaultValues: { name: '', email: '', password: '', confirmPassword: '', role: 'member' },
   });
 
   const [resetLoading, setResetLoading] = useState(false);
@@ -187,18 +188,54 @@ export default function LoginPage() {
     try {
       const backendUrl =
         process.env.THANACARE_BACKEND || 'http://localhost:8080';
-      const response = await fetch(`${backendUrl}/auth/register`, {
+
+      // Determine the correct endpoint based on role
+      let endpoint = '';
+      const requestBody: {
+        name: string;
+        email: string;
+        password: string;
+        organization_id?: string;
+        family_id?: string;
+      } = {
+        name: values.name,
+        email: values.email,
+        password: values.password,
+      };
+
+      switch (values.role) {
+        case 'admin':
+          endpoint = '/auth/register/admin';
+          break;
+        case 'trainer':
+          endpoint = '/auth/register/trainer';
+          // For now, use a placeholder organization ID - in a real app this would come from a selection
+          requestBody.organization_id = '00000000-0000-0000-0000-000000000001';
+          break;
+        case 'member':
+          endpoint = '/auth/register/member';
+          // For now, use a placeholder family ID - in a real app this would come from a selection
+          requestBody.family_id = '00000000-0000-0000-0000-000000000001';
+          break;
+        default:
+          throw new Error('Invalid user role');
+      }
+
+      const response = await fetch(`${backendUrl}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: values.email,
-          password: values.password,
-        }),
+        body: JSON.stringify(requestBody),
       });
-      if (!response.ok) throw new Error('Registration failed');
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Registration failed');
+      }
+
       const data = await response.json();
       const token = data.data.token;
       const user = data.data.user;
+
       // Store token (assuming remember false for new user)
       sessionStorage.setItem('authToken', token);
       dispatch(loginSuccess({ user, token }));
@@ -237,15 +274,6 @@ export default function LoginPage() {
                       <Button variant="ghost">Explore as Guest</Button>
                     </Link>
                   </NavigationMenuLink>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger>
-                    <Button variant="outline">Login</Button>
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    {/* Perhaps some menu items, but for now empty or info */}
-                    <p className="p-4">You are on the login page.</p>
-                  </NavigationMenuContent>
                 </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
@@ -444,6 +472,22 @@ export default function LoginPage() {
                         >
                           <FormField
                             control={registerForm.control}
+                            name="name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Full Name</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="Your full name"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={registerForm.control}
                             name="email"
                             render={({ field }) => (
                               <FormItem>
@@ -453,6 +497,59 @@ export default function LoginPage() {
                                     placeholder="your@email.com"
                                     {...field}
                                   />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={registerForm.control}
+                            name="role"
+                            render={({ field }) => (
+                              <FormItem className="space-y-3">
+                                <FormLabel>User Type</FormLabel>
+                                <FormControl>
+                                  <div className="space-y-2">
+                                    <div className="flex items-center space-x-2">
+                                      <input
+                                        type="radio"
+                                        id="member"
+                                        value="member"
+                                        checked={field.value === 'member'}
+                                        onChange={() => field.onChange('member')}
+                                        className="text-primary"
+                                      />
+                                      <label htmlFor="member" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                        Member
+                                      </label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <input
+                                        type="radio"
+                                        id="trainer"
+                                        value="trainer"
+                                        checked={field.value === 'trainer'}
+                                        onChange={() => field.onChange('trainer')}
+                                        className="text-primary"
+                                      />
+                                      <label htmlFor="trainer" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                        Trainer
+                                      </label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <input
+                                        type="radio"
+                                        id="admin"
+                                        value="admin"
+                                        checked={field.value === 'admin'}
+                                        onChange={() => field.onChange('admin')}
+                                        className="text-primary"
+                                      />
+                                      <label htmlFor="admin" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                        Administrator
+                                      </label>
+                                    </div>
+                                  </div>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
