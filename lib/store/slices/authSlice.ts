@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-interface User {
+export interface User {
   id: string;
+  name: string;
   email: string;
-  name?: string;
-  role?: string;
+  role: string;
 }
 
 interface AuthState {
@@ -13,6 +13,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  rememberMe: boolean; // Add remember me preference to state
 }
 
 const initialState: AuthState = {
@@ -21,45 +22,60 @@ const initialState: AuthState = {
   isAuthenticated: false,
   isLoading: false,
   error: null,
+  rememberMe: false,
 };
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    loginStart: (state) => {
+    loginStart: (state: AuthState) => {
       state.isLoading = true;
       state.error = null;
     },
     loginSuccess: (
-      state,
-      action: PayloadAction<{ user: User; token: string }>
+      state: AuthState,
+      action: PayloadAction<{ user: User; token: string; rememberMe?: boolean }>
     ) => {
       state.isLoading = false;
       state.isAuthenticated = true;
       state.user = action.payload.user;
       state.token = action.payload.token;
+      state.rememberMe = action.payload.rememberMe || false;
       state.error = null;
     },
-    loginFailure: (state, action: PayloadAction<string>) => {
+    loginFailure: (state: AuthState, action: PayloadAction<string>) => {
       state.isLoading = false;
       state.isAuthenticated = false;
       state.user = null;
       state.token = null;
+      state.rememberMe = false;
       state.error = action.payload;
     },
-    logout: (state) => {
+    logout: (state: AuthState) => {
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
+      state.rememberMe = false;
       state.error = null;
     },
-    clearError: (state) => {
+    clearError: (state: AuthState) => {
       state.error = null;
+    },
+    clearStoredTokens: () => {
+      // This action will be handled by a middleware to clear localStorage/sessionStorage
+      // The state itself doesn't change, but we mark it for the middleware
     },
   },
 });
 
-export const { loginStart, loginSuccess, loginFailure, logout, clearError } =
-  authSlice.actions;
+export const {
+  loginStart,
+  loginSuccess,
+  loginFailure,
+  logout,
+  clearError,
+  clearStoredTokens,
+} = authSlice.actions;
+
 export default authSlice.reducer;

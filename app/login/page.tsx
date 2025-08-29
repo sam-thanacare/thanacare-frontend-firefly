@@ -190,14 +190,9 @@ export default function LoginPage() {
       console.log('Extracted user:', user);
       console.log('User role from backend:', user?.role);
 
-      // Store token based on remember preference (default to false if not provided)
-      if (values.remember) {
-        localStorage.setItem('authToken', token);
-      } else {
-        sessionStorage.setItem('authToken', token);
-      }
-
-      dispatch(loginSuccess({ user, token }));
+      // Pass remember me preference to the login action
+      // Token storage is now handled by middleware
+      dispatch(loginSuccess({ user, token, rememberMe: values.remember }));
 
       // Add debugging
       console.log('Login successful - User role:', user.role);
@@ -451,6 +446,7 @@ export default function LoginPage() {
                         )}
                       />
                     </div>
+
                     <Button
                       type="submit"
                       className="w-full uppercase"

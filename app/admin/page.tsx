@@ -125,9 +125,7 @@ export default function AdminDashboard() {
   }, [fetchStats]);
 
   const handleLogout = () => {
-    dispatch(logout());
-    localStorage.removeItem('authToken');
-    sessionStorage.removeItem('authToken');
+    dispatch(logout()); // This will also clear stored tokens via middleware
     router.push('/login');
   };
 

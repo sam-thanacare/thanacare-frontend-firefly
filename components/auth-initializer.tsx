@@ -2,7 +2,12 @@
 
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
-import { loginSuccess } from '@/lib/store/slices/authSlice';
+import { loginSuccess, clearStoredTokens } from '@/lib/store/slices/authSlice';
+import {
+  getStoredTokenWithSource,
+  isTokenExpired,
+  decodeToken,
+} from '@/lib/utils/auth';
 
 interface AuthInitializerProps {
   children: React.ReactNode;
@@ -13,18 +18,35 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
+    console.log('AuthInitializer - Effect triggered with state:', {
+      isAuthenticated,
+      hasUser: !!user,
+    });
+
     // Check for stored auth tokens and restore auth state
     const checkStoredAuth = () => {
+      console.log('AuthInitializer - Checking for stored auth tokens...');
+      console.log('AuthInitializer - Current state:', {
+        isAuthenticated,
+        hasUser: !!user,
+      });
+
       try {
-        // Check localStorage first (remember me), then sessionStorage
-        const token =
-          localStorage.getItem('authToken') ||
-          sessionStorage.getItem('authToken');
+        const { token: storedToken, source } = getStoredTokenWithSource();
+        console.log('AuthInitializer - Stored token found:', {
+          hasToken: !!storedToken,
+          source,
+        });
 
-        if (token && !isAuthenticated && !user) {
-          // Decode JWT to get user info (basic decode, not verification)
-          const payload = JSON.parse(atob(token.split('.')[1]));
+        if (storedToken && !isAuthenticated && !user) {
+          // Check if token is expired
+          if (isTokenExpired(storedToken)) {
+            console.log('AuthInitializer - Token expired, clearing storage');
+            dispatch(clearStoredTokens());
+            return;
+          }
 
+          const payload = decodeToken(storedToken);
           if (payload && payload.user_id && payload.email && payload.role) {
             const user = {
               id: payload.user_id,
@@ -38,21 +60,25 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
             );
             console.log('AuthInitializer - User role:', user.role);
 
+            // Determine if this was a "remember me" token
+            // Check if the token was stored in localStorage (persistent) vs sessionStorage (session-only)
+            const rememberMe = source === 'localStorage';
+
             // Only restore auth state if we don't already have a user
             // This prevents overriding fresh login state
-            dispatch(loginSuccess({ user, token }));
+            dispatch(loginSuccess({ user, token: storedToken, rememberMe }));
           }
         }
       } catch (error) {
         console.error('AuthInitializer - Error restoring auth state:', error);
         // Clear invalid tokens
-        localStorage.removeItem('authToken');
-        sessionStorage.removeItem('authToken');
+        dispatch(clearStoredTokens());
       }
     };
 
     // Add a small delay to ensure login process completes first
-    const timer = setTimeout(checkStoredAuth, 500);
+    // Increased to 150ms to ensure proper auth state restoration
+    const timer = setTimeout(checkStoredAuth, 150);
 
     return () => clearTimeout(timer);
   }, [dispatch, isAuthenticated, user]);
