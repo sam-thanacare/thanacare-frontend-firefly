@@ -11,6 +11,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "security-scan": "npm audit --audit-level moderate",
+    "security-scan:snyk": "snyk test --severity-threshold=medium",
+    "security-scan:snyk-auth": "snyk auth",
+    "security-scan:full": "npm run security-scan && npm run security-scan:snyk",
     "test": "echo 'No tests specified yet'",
     "test:ci": "echo 'No tests specified yet'",
     "ci": "npm run lint && npm run format:check && npm run security-scan && npm run test:ci"
@@ -42,6 +45,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
     "prettier": "^3.3.3",
+    "snyk": "^1.1294.0",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.7",
     "typescript": "^5"
