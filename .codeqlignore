@@ -1,0 +1,43 @@
+# Dependencies and build outputs
+node_modules/
+.next/
+out/
+dist/
+build/
+
+# Logs and temporary files
+*.log
+.DS_Store
+Thumbs.db
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+
+# Docker
+.dockerignore
+Dockerfile*
+
+# Test and coverage files
+coverage/
+.nyc_output/
+
+# Cache directories
+.cache/
+.parcel-cache/
+
+# Configuration files that might contain sensitive data
+.env*
+!.env.example
+
+# Generated files
+*.tsbuildinfo
