@@ -1,7 +1,8 @@
 'use client';
 
 import { Provider } from 'react-redux';
-import { store } from '@/lib/store';
+import { PersistGate } from 'redux-persist/integration/react';
+import { store, persistor } from '@/lib/store';
 import { ThemeProvider } from './theme-provider';
 
 interface ProvidersProps {
@@ -11,7 +12,9 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   return (
     <Provider store={store}>
-      <ThemeProvider>{children}</ThemeProvider>
+      <PersistGate loading={null} persistor={persistor}>
+        <ThemeProvider>{children}</ThemeProvider>
+      </PersistGate>
     </Provider>
   );
 }

@@ -16,7 +16,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -39,11 +39,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+
 import { Switch } from '@/components/ui/switch';
 import {
   Accordion,
@@ -63,11 +59,6 @@ const loginSchema = z.object({
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
-
-// Add schema for forgot password
-const forgotSchema = z.object({
-  email: z.string().email({ message: 'Invalid email address' }),
-});
 
 // Add schema for register
 const registerSchema = z
@@ -123,9 +114,13 @@ const registerSchema = z
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
+  const [redirectPath, setRedirectPath] = useState('');
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { isLoading, error } = useAppSelector((state) => state.auth);
+  const { isLoading, error, isAuthenticated, user } = useAppSelector(
+    (state) => state.auth
+  );
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -134,11 +129,6 @@ export default function LoginPage() {
       password: '',
       remember: false,
     },
-  });
-
-  const forgotForm = useForm<z.infer<typeof forgotSchema>>({
-    resolver: zodResolver(forgotSchema),
-    defaultValues: { email: '' },
   });
 
   const registerForm = useForm<z.infer<typeof registerSchema>>({
@@ -154,8 +144,25 @@ export default function LoginPage() {
     },
   });
 
-  const [resetLoading, setResetLoading] = useState(false);
   const [registerLoading, setRegisterLoading] = useState(false);
+
+  // Handle redirect after successful authentication
+  useEffect(() => {
+    console.log('LoginPage - Redirect effect triggered:', {
+      shouldRedirect,
+      redirectPath,
+      isAuthenticated,
+      userRole: user?.role,
+      user: user,
+    });
+
+    if (shouldRedirect && redirectPath && isAuthenticated && user) {
+      console.log('LoginPage - Redirecting to:', redirectPath);
+      router.replace(redirectPath);
+      setShouldRedirect(false);
+      setRedirectPath('');
+    }
+  }, [shouldRedirect, redirectPath, isAuthenticated, user, router]);
 
   const onSubmit = async (values: LoginForm) => {
     dispatch(loginStart());
@@ -177,8 +184,11 @@ export default function LoginPage() {
       }
 
       const data = await response.json();
+      console.log('Backend response:', data);
       const token = data.data.token; // Adjust based on actual response structure
-      const user = data.data.user; // Adjust based on actual response structure
+      const user = data.data.user.user; // Fix: extract user from nested structure
+      console.log('Extracted user:', user);
+      console.log('User role from backend:', user?.role);
 
       // Store token based on remember preference (default to false if not provided)
       if (values.remember) {
@@ -188,33 +198,26 @@ export default function LoginPage() {
       }
 
       dispatch(loginSuccess({ user, token }));
-      router.push('/dashboard'); // Redirect to dashboard or home
+
+      // Add debugging
+      console.log('Login successful - User role:', user.role);
+      console.log('About to redirect admin user to /admin');
+
+      // Set redirect state instead of immediately redirecting
+      if (user.role === 'admin') {
+        console.log('Setting redirect to /admin');
+        setRedirectPath('/admin');
+        setShouldRedirect(true);
+      } else {
+        console.log('Setting redirect to /guest');
+        setRedirectPath('/guest');
+        setShouldRedirect(true);
+      }
     } catch (error) {
       console.error('Login error:', error);
       dispatch(
         loginFailure(error instanceof Error ? error.message : 'Login failed')
       );
-    }
-  };
-
-  const handleForgot = async (values: z.infer<typeof forgotSchema>) => {
-    setResetLoading(true);
-    try {
-      const backendUrl =
-        process.env.THANACARE_BACKEND || 'http://localhost:8080';
-      const response = await fetch(`${backendUrl}/auth/forgot-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: values.email }),
-      });
-      if (!response.ok) throw new Error('Reset failed');
-      // Show success message, perhaps
-      alert('Password reset email sent');
-    } catch (error) {
-      console.error(error);
-      // Show error
-    } finally {
-      setResetLoading(false);
     }
   };
 
@@ -267,13 +270,30 @@ export default function LoginPage() {
       }
 
       const data = await response.json();
+      console.log('Registration backend response:', data);
       const token = data.data.token;
-      const user = data.data.user;
+      const user = data.data.user.user; // Fix: extract user from nested structure
+      console.log('Registration extracted user:', user);
+      console.log('Registration user role from backend:', user?.role);
 
       // Store token (assuming remember false for new user)
       sessionStorage.setItem('authToken', token);
       dispatch(loginSuccess({ user, token }));
-      router.push('/dashboard');
+
+      // Add debugging
+      console.log('Registration successful - User role:', user.role);
+      console.log('About to redirect admin user to /admin');
+
+      // Set redirect state instead of immediately redirecting
+      if (user.role === 'admin') {
+        console.log('Setting redirect to /admin');
+        setRedirectPath('/admin');
+        setShouldRedirect(true);
+      } else {
+        console.log('Setting redirect to /guest');
+        setRedirectPath('/guest');
+        setShouldRedirect(true);
+      }
     } catch (error) {
       console.error(error);
       dispatch(
@@ -288,7 +308,7 @@ export default function LoginPage() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col pb-24">
         {/* Fixed Navbar */}
         <nav className="fixed top-0 left-0 right-0 z-50 bg-background border-b">
           <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -321,7 +341,7 @@ export default function LoginPage() {
           <div
             className="relative flex items-center justify-center p-8 text-white"
             style={{
-              backgroundImage: `url('/empowerment.jpg')`,
+              backgroundImage: `url('/empowerment.svg')`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
@@ -412,7 +432,7 @@ export default function LoginPage() {
                         </FormItem>
                       )}
                     />
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-start">
                       <FormField
                         control={form.control}
                         name="remember"
@@ -430,52 +450,6 @@ export default function LoginPage() {
                           </FormItem>
                         )}
                       />
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button variant="link" className="p-0">
-                            Forgot Password
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-80">
-                          <Form {...forgotForm}>
-                            <form
-                              onSubmit={forgotForm.handleSubmit(handleForgot)}
-                              className="space-y-4"
-                            >
-                              <FormField
-                                control={forgotForm.control}
-                                name="email"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Email</FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        placeholder="your@email.com"
-                                        {...field}
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <Button
-                                type="submit"
-                                className="w-full"
-                                disabled={resetLoading}
-                              >
-                                {resetLoading ? (
-                                  <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Sending...
-                                  </>
-                                ) : (
-                                  'Send Reset Link'
-                                )}
-                              </Button>
-                            </form>
-                          </Form>
-                        </PopoverContent>
-                      </Popover>
                     </div>
                     <Button
                       type="submit"
