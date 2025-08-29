@@ -85,13 +85,33 @@ const registerSchema = z
     confirmPassword: z
       .string()
       .min(8, { message: 'Password must be at least 8 characters' }),
-    role: z.enum(['admin', 'trainer', 'member'], {
+    role: z.enum(['trainer', 'member'], {
       message: 'Please select a user type',
     }),
+    organizationId: z.string().optional(),
+    familyId: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ['confirmPassword'],
+  })
+  .refine((data) => {
+    if (data.role === 'trainer' && (!data.organizationId || data.organizationId.trim() === '')) {
+      return false;
+    }
+    return true;
+  }, {
+    message: "Organization ID is required for trainers",
+    path: ['organizationId'],
+  })
+  .refine((data) => {
+    if (data.role === 'member' && (!data.familyId || data.familyId.trim() === '')) {
+      return false;
+    }
+    return true;
+  }, {
+    message: "Family ID is required for members",
+    path: ['familyId'],
   });
 
 export default function LoginPage() {
@@ -116,7 +136,15 @@ export default function LoginPage() {
 
   const registerForm = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { name: '', email: '', password: '', confirmPassword: '', role: 'member' },
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      role: 'member',
+      organizationId: '',
+      familyId: ''
+    },
   });
 
   const [resetLoading, setResetLoading] = useState(false);
@@ -204,18 +232,17 @@ export default function LoginPage() {
       };
 
       switch (values.role) {
-        case 'admin':
-          endpoint = '/auth/register/admin';
-          break;
         case 'trainer':
           endpoint = '/auth/register/trainer';
-          // For now, use a placeholder organization ID - in a real app this would come from a selection
-          requestBody.organization_id = '00000000-0000-0000-0000-000000000001';
+          if (values.organizationId) {
+            requestBody.organization_id = values.organizationId;
+          }
           break;
         case 'member':
           endpoint = '/auth/register/member';
-          // For now, use a placeholder family ID - in a real app this would come from a selection
-          requestBody.family_id = '00000000-0000-0000-0000-000000000001';
+          if (values.familyId) {
+            requestBody.family_id = values.familyId;
+          }
           break;
         default:
           throw new Error('Invalid user role');
@@ -270,7 +297,7 @@ export default function LoginPage() {
               <NavigationMenuList>
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
-                    <Link href="/">
+                    <Link href="/guest">
                       <Button variant="ghost">Explore as Guest</Button>
                     </Link>
                   </NavigationMenuLink>
@@ -536,25 +563,52 @@ export default function LoginPage() {
                                         Trainer
                                       </label>
                                     </div>
-                                    <div className="flex items-center space-x-2">
-                                      <input
-                                        type="radio"
-                                        id="admin"
-                                        value="admin"
-                                        checked={field.value === 'admin'}
-                                        onChange={() => field.onChange('admin')}
-                                        className="text-primary"
-                                      />
-                                      <label htmlFor="admin" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                        Administrator
-                                      </label>
-                                    </div>
                                   </div>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
+
+                          {/* Conditional Organization ID field for trainers */}
+                          {registerForm.watch('role') === 'trainer' && (
+                            <FormField
+                              control={registerForm.control}
+                              name="organizationId"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Organization UUID</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      placeholder="Enter organization UUID"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          )}
+
+                          {/* Conditional Family ID field for members */}
+                          {registerForm.watch('role') === 'member' && (
+                            <FormField
+                              control={registerForm.control}
+                              name="familyId"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Family UUID</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      placeholder="Enter family UUID"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          )}
                           <FormField
                             control={registerForm.control}
                             name="password"
@@ -609,7 +663,7 @@ export default function LoginPage() {
                   </AccordionItem>
                 </Accordion>
                 <Button variant="secondary" asChild className="mt-4">
-                  <Link href="/">Explore as Guest</Link>
+                  <Link href="/guest">Explore as Guest</Link>
                 </Button>
               </CardFooter>
             </Card>
