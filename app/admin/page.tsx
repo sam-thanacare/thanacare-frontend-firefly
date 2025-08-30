@@ -9,7 +9,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, Users, Shield, Key, Activity, Building2 } from 'lucide-react';
+import {
+  LogOut,
+  Users,
+  Shield,
+  Key,
+  Activity,
+  Building2,
+  Clock,
+  CheckCircle,
+  Globe,
+} from 'lucide-react';
 import { UsersTable } from '@/components/admin/UsersTable';
 import { LoginRecordsTable } from '@/components/admin/LoginRecordsTable';
 import { PasswordResetPanel } from '@/components/admin/PasswordResetPanel';
@@ -48,6 +58,8 @@ export default function AdminDashboard() {
     totalLoginRecords: 0,
     successfulLogins: 0,
     failedLogins: 0,
+    recentActivity: 0,
+    uniqueIPs: 0,
   });
   const [statsLoading, setStatsLoading] = useState(true);
   const [selectedUserForPasswordReset, setSelectedUserForPasswordReset] =
@@ -122,11 +134,25 @@ export default function AdminDashboard() {
           (r: LoginRecord) => !r.success
         ).length;
 
+        // Calculate additional metrics
+        const now = new Date();
+        const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        const recentActivity = records.filter(
+          (r: LoginRecord) => new Date(r.created_at) > oneDayAgo
+        ).length;
+        const uniqueIPs = new Set(
+          records
+            .filter((r: LoginRecord) => r.ip_address)
+            .map((r: LoginRecord) => r.ip_address)
+        ).size;
+
         setStats((prev) => ({
           ...prev,
           totalLoginRecords: totalRecords,
           successfulLogins,
           failedLogins,
+          recentActivity,
+          uniqueIPs,
         }));
       }
     } catch (error) {
@@ -405,6 +431,97 @@ export default function AdminDashboard() {
               </TabsContent>
 
               <TabsContent value="login-records" className="space-y-6">
+                {/* Activity Overview Cards */}
+                <div className="grid gap-4 md:grid-cols-4">
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">
+                        Recent Activity
+                      </CardTitle>
+                      <Clock className="h-4 w-4 text-orange-600" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-orange-600">
+                        {statsLoading ? (
+                          <div className="animate-pulse bg-muted h-6 w-8 rounded"></div>
+                        ) : (
+                          stats.recentActivity
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Last 24 hours
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">
+                        Success Rate
+                      </CardTitle>
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-green-600">
+                        {statsLoading ? (
+                          <div className="animate-pulse bg-muted h-6 w-8 rounded"></div>
+                        ) : stats.totalLoginRecords > 0 ? (
+                          `${Math.round((stats.successfulLogins / stats.totalLoginRecords) * 100)}%`
+                        ) : (
+                          '0%'
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {stats.successfulLogins} of {stats.totalLoginRecords}{' '}
+                        attempts
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">
+                        Unique Locations
+                      </CardTitle>
+                      <Globe className="h-4 w-4 text-purple-600" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-purple-600">
+                        {statsLoading ? (
+                          <div className="animate-pulse bg-muted h-6 w-8 rounded"></div>
+                        ) : (
+                          stats.uniqueIPs
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Different IP addresses
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">
+                        Security Status
+                      </CardTitle>
+                      <Shield className="h-4 w-4 text-blue-600" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-blue-600">
+                        {statsLoading ? (
+                          <div className="animate-pulse bg-muted h-6 w-8 rounded"></div>
+                        ) : stats.failedLogins > 10 ? (
+                          'Alert'
+                        ) : stats.failedLogins > 5 ? (
+                          'Warning'
+                        ) : (
+                          'Normal'
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {stats.failedLogins} failed attempts
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
@@ -412,7 +529,8 @@ export default function AdminDashboard() {
                       <span>Login Activity</span>
                     </CardTitle>
                     <p className="text-sm text-muted-foreground">
-                      Monitor authentication attempts and security events
+                      Monitor authentication attempts and security events in
+                      real-time
                     </p>
                   </CardHeader>
                   <CardContent>
