@@ -9,10 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, Users, Shield, Key, Activity } from 'lucide-react';
+import { LogOut, Users, Shield, Key, Activity, Building2 } from 'lucide-react';
 import { UsersTable } from '@/components/admin/UsersTable';
 import { LoginRecordsTable } from '@/components/admin/LoginRecordsTable';
 import { PasswordResetPanel } from '@/components/admin/PasswordResetPanel';
+import { OrganizationsTable } from '@/components/admin/OrganizationsTable';
 
 interface User {
   id: string;
@@ -43,6 +44,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('users');
   const [stats, setStats] = useState({
     totalUsers: 0,
+    totalOrganizations: 0,
     totalLoginRecords: 0,
     successfulLogins: 0,
     failedLogins: 0,
@@ -82,6 +84,20 @@ export default function AdminDashboard() {
         const usersData = await usersResponse.json();
         const users = usersData.data || [];
         setStats((prev) => ({ ...prev, totalUsers: users.length }));
+      }
+
+      // Fetch organizations count
+      const orgsResponse = await fetch(`${backendUrl}/api/organizations`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (orgsResponse.ok) {
+        const orgsData = await orgsResponse.json();
+        const orgs = orgsData.data || [];
+        setStats((prev) => ({ ...prev, totalOrganizations: orgs.length }));
       }
 
       // Fetch login records count
@@ -188,7 +204,7 @@ export default function AdminDashboard() {
         <main className="container mx-auto px-4 py-6">
           <div className="space-y-6">
             {/* Stats Overview */}
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -214,9 +230,9 @@ export default function AdminDashboard() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Login Attempts
+                    Organizations
                   </CardTitle>
-                  <Activity className="h-4 w-4 text-muted-foreground" />
+                  <Building2 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
@@ -224,6 +240,26 @@ export default function AdminDashboard() {
                       <div className="flex items-center space-x-2">
                         <div className="animate-pulse bg-muted h-6 w-8 rounded"></div>
                       </div>
+                    ) : (
+                      stats.totalOrganizations
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Active organizations
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Login Attempts
+                  </CardTitle>
+                  <Activity className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {statsLoading ? (
+                      <div className="animate-pulse bg-muted h-6 w-8 rounded"></div>
                     ) : (
                       stats.totalLoginRecords
                     )}
@@ -303,13 +339,20 @@ export default function AdminDashboard() {
               }}
               className="space-y-6"
             >
-              <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
+              <TabsList className="grid w-full grid-cols-4 lg:w-[500px]">
                 <TabsTrigger
                   value="users"
                   className="flex items-center space-x-2"
                 >
                   <Users className="h-4 w-4" />
                   <span className="hidden sm:inline">Users</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="organizations"
+                  className="flex items-center space-x-2"
+                >
+                  <Building2 className="h-4 w-4" />
+                  <span className="hidden sm:inline">Orgs</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="login-records"
@@ -340,6 +383,23 @@ export default function AdminDashboard() {
                   </CardHeader>
                   <CardContent>
                     <UsersTable onPasswordReset={handlePasswordResetRequest} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="organizations" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Building2 className="h-5 w-5" />
+                      <span>Organization Management</span>
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Create, view, and manage all organizations in the system
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    <OrganizationsTable />
                   </CardContent>
                 </Card>
               </TabsContent>
