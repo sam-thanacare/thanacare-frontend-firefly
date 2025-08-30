@@ -21,7 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 
 import {
@@ -30,12 +29,7 @@ import {
   Activity,
   CheckCircle,
   XCircle,
-  RefreshCw,
-  Download,
   Filter,
-  Clock,
-  Globe,
-  Monitor,
 } from 'lucide-react';
 
 interface LoginRecord {
@@ -53,9 +47,6 @@ interface ActivityStats {
   totalRecords: number;
   successfulLogins: number;
   failedLogins: number;
-  uniqueUsers: number;
-  uniqueIPs: number;
-  recentActivity: number; // Last 24 hours
 }
 
 export function LoginRecordsTable() {
@@ -66,8 +57,6 @@ export function LoginRecordsTable() {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [autoRefresh, setAutoRefresh] = useState(false);
-  const [refreshInterval, setRefreshInterval] = useState(30); // seconds
   const [filterSuccess, setFilterSuccess] = useState<
     'all' | 'success' | 'failed'
   >('all');
@@ -78,9 +67,6 @@ export function LoginRecordsTable() {
     totalRecords: 0,
     successfulLogins: 0,
     failedLogins: 0,
-    uniqueUsers: 0,
-    uniqueIPs: 0,
-    recentActivity: 0,
   });
   const pageSize = 50;
 
@@ -125,25 +111,12 @@ export function LoginRecordsTable() {
       setTotalCount(data.data.total_count || 0);
 
       // Calculate stats
-      const uniqueUsers = new Set(
-        fetchedRecords.filter((r) => r.user_id).map((r) => r.user_id)
-      ).size;
-      const uniqueIPs = new Set(
-        fetchedRecords.filter((r) => r.ip_address).map((r) => r.ip_address)
-      ).size;
-      const now = new Date();
-      const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-      const recentActivity = fetchedRecords.filter(
-        (r) => new Date(r.created_at) > oneDayAgo
-      ).length;
-
       setStats({
         totalRecords: data.data.total_count || 0,
-        successfulLogins: fetchedRecords.filter((r) => r.success).length,
-        failedLogins: fetchedRecords.filter((r) => !r.success).length,
-        uniqueUsers,
-        uniqueIPs,
-        recentActivity,
+        successfulLogins: fetchedRecords.filter((r: LoginRecord) => r.success)
+          .length,
+        failedLogins: fetchedRecords.filter((r: LoginRecord) => !r.success)
+          .length,
       });
     } catch (err) {
       setError(
@@ -158,48 +131,6 @@ export function LoginRecordsTable() {
   useEffect(() => {
     fetchLoginRecords();
   }, [fetchLoginRecords]);
-
-  // Auto-refresh functionality
-  useEffect(() => {
-    if (!autoRefresh) return;
-
-    const interval = setInterval(() => {
-      fetchLoginRecords();
-    }, refreshInterval * 1000);
-
-    return () => clearInterval(interval);
-  }, [autoRefresh, refreshInterval, fetchLoginRecords]);
-
-  const handleExport = () => {
-    const csvContent = [
-      [
-        'Status',
-        'Email',
-        'IP Address',
-        'User Agent',
-        'Timestamp',
-        'Failure Reason',
-      ],
-      ...records.map((record) => [
-        record.success ? 'Success' : 'Failed',
-        record.email,
-        record.ip_address || 'N/A',
-        record.user_agent || 'N/A',
-        new Date(record.created_at).toISOString(),
-        record.failure_reason || 'N/A',
-      ]),
-    ]
-      .map((row) => row.map((field) => `"${field}"`).join(','))
-      .join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `login-records-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
 
   const filteredRecords = records.filter((record) => {
     const matchesSearch =
@@ -269,7 +200,7 @@ export function LoginRecordsTable() {
   return (
     <div className="space-y-6">
       {/* Enhanced Stats Overview */}
-      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
+      <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Records</CardTitle>
@@ -304,42 +235,6 @@ export function LoginRecordsTable() {
             <p className="text-xs text-muted-foreground">Login attempts</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Unique Users</CardTitle>
-            <Monitor className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              {stats.uniqueUsers}
-            </div>
-            <p className="text-xs text-muted-foreground">Active accounts</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Unique IPs</CardTitle>
-            <Globe className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-600">
-              {stats.uniqueIPs}
-            </div>
-            <p className="text-xs text-muted-foreground">Different locations</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Last 24h</CardTitle>
-            <Clock className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
-              {stats.recentActivity}
-            </div>
-            <p className="text-xs text-muted-foreground">Recent activity</p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Enhanced Controls */}
@@ -364,99 +259,47 @@ export function LoginRecordsTable() {
 
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <Label htmlFor="auto-refresh" className="text-sm">
-                  Auto-refresh
+                <Label htmlFor="status-filter" className="text-sm">
+                  Status:
                 </Label>
-                <Switch
-                  id="auto-refresh"
-                  checked={autoRefresh}
-                  onCheckedChange={setAutoRefresh}
-                />
-              </div>
-
-              {autoRefresh && (
                 <Select
-                  value={refreshInterval.toString()}
-                  onValueChange={(value) => setRefreshInterval(parseInt(value))}
+                  value={filterSuccess}
+                  onValueChange={(value: 'all' | 'success' | 'failed') =>
+                    setFilterSuccess(value)
+                  }
                 >
                   <SelectTrigger className="w-32">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="15">15 seconds</SelectItem>
-                    <SelectItem value="30">30 seconds</SelectItem>
-                    <SelectItem value="60">1 minute</SelectItem>
-                    <SelectItem value="300">5 minutes</SelectItem>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="success">Success</SelectItem>
+                    <SelectItem value="failed">Failed</SelectItem>
                   </SelectContent>
                 </Select>
-              )}
+              </div>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={fetchLoginRecords}
-                disabled={loading}
-              >
-                <RefreshCw
-                  className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`}
-                />
-                Refresh
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExport}
-                disabled={records.length === 0}
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Export CSV
-              </Button>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-4">
-            <div className="flex items-center space-x-2">
-              <Label htmlFor="status-filter" className="text-sm">
-                Status:
-              </Label>
-              <Select
-                value={filterSuccess}
-                onValueChange={(value: 'all' | 'success' | 'failed') =>
-                  setFilterSuccess(value)
-                }
-              >
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="success">Success</SelectItem>
-                  <SelectItem value="failed">Failed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Label htmlFor="time-filter" className="text-sm">
-                Time Range:
-              </Label>
-              <Select
-                value={filterTimeRange}
-                onValueChange={(value: 'all' | '24h' | '7d' | '30d') =>
-                  setFilterTimeRange(value)
-                }
-              >
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Time</SelectItem>
-                  <SelectItem value="24h">Last 24h</SelectItem>
-                  <SelectItem value="7d">Last 7 days</SelectItem>
-                  <SelectItem value="30d">Last 30 days</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex items-center space-x-2">
+                <Label htmlFor="time-filter" className="text-sm">
+                  Time Range:
+                </Label>
+                <Select
+                  value={filterTimeRange}
+                  onValueChange={(value: 'all' | '24h' | '7d' | '30d') =>
+                    setFilterTimeRange(value)
+                  }
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Time</SelectItem>
+                    <SelectItem value="24h">Last 24h</SelectItem>
+                    <SelectItem value="7d">Last 7 days</SelectItem>
+                    <SelectItem value="30d">Last 30 days</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </CardContent>

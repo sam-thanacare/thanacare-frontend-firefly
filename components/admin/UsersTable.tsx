@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 
-import { Loader2, Search, Users, Key } from 'lucide-react';
+import { Loader2, Search, Users } from 'lucide-react';
 
 interface User {
   id: string;
@@ -25,11 +25,7 @@ interface User {
   updated_at: string;
 }
 
-interface UsersTableProps {
-  onPasswordReset?: (user: User) => void;
-}
-
-export function UsersTable({ onPasswordReset }: UsersTableProps) {
+export function UsersTable() {
   const { token } = useAppSelector((state) => state.auth);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -208,15 +204,9 @@ export function UsersTable({ onPasswordReset }: UsersTableProps) {
                     })}
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onPasswordReset?.(user)}
-                      className="h-8 w-8 p-0"
-                      title={`Reset password for ${user.name}`}
-                    >
-                      <Key className="h-4 w-4" />
-                    </Button>
+                    <span className="text-muted-foreground text-sm">
+                      Use Security tab for password reset
+                    </span>
                   </TableCell>
                 </TableRow>
               ))

@@ -6,37 +6,37 @@ import { Button } from './button';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
 import { cn } from '@/lib/utils';
 
-interface SelectProps {
-  value?: string;
-  onValueChange?: (value: string) => void;
+export interface SelectProps<T = string> {
+  value?: T;
+  onValueChange?: (value: T) => void;
   children: React.ReactNode;
   className?: string;
 }
 
-interface SelectTriggerProps {
+export interface SelectTriggerProps {
   children: React.ReactNode;
   className?: string;
 }
 
-interface SelectContentProps {
+export interface SelectContentProps {
   children: React.ReactNode;
   className?: string;
 }
 
-interface SelectItemProps {
-  value: string;
+export interface SelectItemProps<T = string> {
+  value: T;
   children: React.ReactNode;
   className?: string;
 }
 
-interface SelectValueProps {
+export interface SelectValueProps {
   placeholder?: string;
   className?: string;
 }
 
 const SelectContext = React.createContext<{
-  value?: string;
-  onValueChange?: (value: string) => void;
+  value?: unknown;
+  onValueChange?: (value: unknown) => void;
   open: boolean;
   setOpen: (open: boolean) => void;
 }>({
@@ -44,30 +44,39 @@ const SelectContext = React.createContext<{
   setOpen: () => {},
 });
 
-const Select = ({ value, onValueChange, children, className }: SelectProps) => {
+const Select = <T = string,>({
+  value,
+  onValueChange,
+  children,
+  className,
+}: SelectProps<T>) => {
   const [open, setOpen] = React.useState(false);
-  
+
   return (
-    <SelectContext.Provider value={{ value, onValueChange, open, setOpen }}>
-      <div className={cn('relative', className)}>
-        {children}
-      </div>
+    <SelectContext.Provider
+      value={{
+        value: value as unknown,
+        onValueChange: onValueChange as (value: unknown) => void,
+        open,
+        setOpen,
+      }}
+    >
+      <Popover open={open} onOpenChange={setOpen}>
+        <div className={cn('relative', className)}>{children}</div>
+      </Popover>
     </SelectContext.Provider>
   );
 };
 
 const SelectTrigger = ({ children, className }: SelectTriggerProps) => {
   const { setOpen } = React.useContext(SelectContext);
-  
+
   return (
     <PopoverTrigger asChild>
       <Button
         variant="outline"
         role="combobox"
-        className={cn(
-          'w-full justify-between',
-          className
-        )}
+        className={cn('w-full justify-between', className)}
         onClick={() => setOpen(true)}
       >
         {children}
@@ -78,22 +87,25 @@ const SelectTrigger = ({ children, className }: SelectTriggerProps) => {
 };
 
 const SelectContent = ({ children, className }: SelectContentProps) => {
-  const { open, setOpen } = React.useContext(SelectContext);
-  
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverContent className={cn('w-full p-0', className)}>
-        <div className="max-h-60 overflow-auto">
-          {children}
-        </div>
-      </PopoverContent>
-    </Popover>
+    <PopoverContent className={cn('w-full p-0', className)}>
+      <div className="max-h-60 overflow-auto">{children}</div>
+    </PopoverContent>
   );
 };
 
-const SelectItem = ({ value, children, className, ...props }: SelectItemProps) => {
-  const { value: selectedValue, onValueChange, setOpen } = React.useContext(SelectContext);
-  
+const SelectItem = <T = string,>({
+  value,
+  children,
+  className,
+  ...props
+}: SelectItemProps<T>) => {
+  const {
+    value: selectedValue,
+    onValueChange,
+    setOpen,
+  } = React.useContext(SelectContext);
+
   return (
     <Button
       variant="ghost"
@@ -115,18 +127,12 @@ const SelectItem = ({ value, children, className, ...props }: SelectItemProps) =
 
 const SelectValue = ({ placeholder, className }: SelectValueProps) => {
   const { value } = React.useContext(SelectContext);
-  
+
   return (
     <span className={cn('block truncate', className)}>
-      {value || placeholder}
+      {value ? String(value) : placeholder}
     </span>
   );
 };
 
-export {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-};
+export { Select, SelectTrigger, SelectContent, SelectItem, SelectValue };

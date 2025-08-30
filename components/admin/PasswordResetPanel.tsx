@@ -34,19 +34,9 @@ interface User {
   updated_at: string;
 }
 
-interface PasswordResetPanelProps {
-  selectedUser?: User | null;
-  onUserSelectionChange?: (user: User | null) => void;
-}
-
-export function PasswordResetPanel({
-  selectedUser: propSelectedUser,
-  onUserSelectionChange,
-}: PasswordResetPanelProps) {
+export function PasswordResetPanel() {
   const { token } = useAppSelector((state) => state.auth);
-  const [selectedUser, setSelectedUser] = useState<User | null>(
-    propSelectedUser || null
-  );
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newPassword, setNewPassword] = useState('');
   const [generatedPassword, setGeneratedPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -144,26 +134,9 @@ export function PasswordResetPanel({
     console.log('PasswordResetPanel: Users state changed:', users);
   }, [users]);
 
-  // Initialize selected user when component mounts or prop changes
-  useEffect(() => {
-    console.log(
-      'PasswordResetPanel: propSelectedUser changed:',
-      propSelectedUser
-    );
-    if (propSelectedUser !== undefined) {
-      setSelectedUser(propSelectedUser);
-      // Clear any previous messages when user changes
-      setMessage(null);
-      // Clear any previous generated password when user changes
-      setGeneratedPassword('');
-      setNewPassword('');
-    }
-  }, [propSelectedUser]);
-
   const handleUserSelect = (user: User) => {
     console.log('PasswordResetPanel: User selected:', user);
     setShowUserSelector(false);
-    onUserSelectionChange?.(user);
     setMessage(null); // Clear any previous messages
   };
 
@@ -292,9 +265,6 @@ export function PasswordResetPanel({
       setSelectedUser(null);
       setNewPassword('');
       setGeneratedPassword('');
-
-      // Notify parent component that user selection should be cleared
-      onUserSelectionChange?.(null);
 
       // Refresh users list to ensure data is current
       fetchUsers();
@@ -558,7 +528,6 @@ export function PasswordResetPanel({
                     size="sm"
                     onClick={() => {
                       setSelectedUser(null);
-                      onUserSelectionChange?.(null);
                     }}
                     className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
                     title="Clear selection"
