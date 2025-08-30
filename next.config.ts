@@ -3,7 +3,8 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   output: 'standalone',
   env: {
-    THANACARE_BACKEND: process.env.THANACARE_BACKEND,
+    NEXT_PUBLIC_THANACARE_BACKEND:
+      process.env.THANACARE_BACKEND || 'http://localhost:8080',
   },
 };
 

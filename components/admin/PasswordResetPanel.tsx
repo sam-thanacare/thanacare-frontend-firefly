@@ -24,14 +24,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
 
 interface User {
   id: string;
@@ -70,6 +62,11 @@ export function PasswordResetPanel({
 
   // Fetch users for selection
   const fetchUsers = useCallback(async () => {
+    console.log(
+      'PasswordResetPanel: fetchUsers called, token:',
+      token ? 'Present' : 'Missing'
+    );
+
     if (!token) {
       setMessage({
         type: 'error',
@@ -83,13 +80,21 @@ export function PasswordResetPanel({
       setMessage(null);
 
       const backendUrl =
-        process.env.THANACARE_BACKEND || 'http://localhost:8080';
+        process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
+      console.log('PasswordResetPanel: Fetching from backend URL:', backendUrl);
+
       const response = await fetch(`${backendUrl}/api/admin/users`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
+
+      console.log('PasswordResetPanel: Response status:', response.status);
+      console.log(
+        'PasswordResetPanel: Response headers:',
+        Object.fromEntries(response.headers.entries())
+      );
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -103,6 +108,10 @@ export function PasswordResetPanel({
 
       const data = await response.json();
       const usersList = data.data || [];
+      console.log('PasswordResetPanel: Fetched users data:', {
+        data,
+        usersList,
+      });
       setUsers(usersList);
 
       if (usersList.length === 0) {
@@ -123,8 +132,17 @@ export function PasswordResetPanel({
   }, [token]);
 
   useEffect(() => {
+    console.log(
+      'PasswordResetPanel: Component mounted, token:',
+      token ? 'Present' : 'Missing'
+    );
     fetchUsers();
-  }, [fetchUsers]);
+  }, [fetchUsers, token]);
+
+  // Debug: Log when users state changes
+  useEffect(() => {
+    console.log('PasswordResetPanel: Users state changed:', users);
+  }, [users]);
 
   // Initialize selected user when component mounts or prop changes
   useEffect(() => {
@@ -163,7 +181,7 @@ export function PasswordResetPanel({
       setMessage(null);
 
       const backendUrl =
-        process.env.THANACARE_BACKEND || 'http://localhost:8080';
+        process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
       const response = await fetch(
         `${backendUrl}/api/admin/generate-password`,
         {
@@ -236,7 +254,7 @@ export function PasswordResetPanel({
       setMessage(null);
 
       const backendUrl =
-        process.env.THANACARE_BACKEND || 'http://localhost:8080';
+        process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
       const response = await fetch(`${backendUrl}/api/admin/reset-password`, {
         method: 'POST',
         headers: {
@@ -483,40 +501,43 @@ export function PasswordResetPanel({
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-full p-0" align="start">
-                <Command>
-                  <CommandInput placeholder="Search users..." />
-                  <CommandEmpty>
-                    {usersLoading ? 'Loading users...' : 'No users found.'}
-                  </CommandEmpty>
-                  <CommandGroup>
-                    <CommandList>
-                      {users.map((user) => (
-                        <CommandItem
-                          key={user.id}
-                          value={`${user.name} ${user.email}`}
-                          onSelect={() => handleUserSelect(user)}
-                        >
-                          <div className="flex items-center space-x-2 flex-1">
-                            <Users className="h-4 w-4" />
-                            <div className="flex flex-col">
-                              <span className="font-medium">{user.name}</span>
-                              <span className="text-sm text-muted-foreground">
-                                {user.email} • {user.role}
-                              </span>
-                            </div>
-                          </div>
-                          <Check
-                            className={`ml-auto h-4 w-4 ${
-                              selectedUser?.id === user.id
-                                ? 'opacity-100'
-                                : 'opacity-0'
-                            }`}
-                          />
-                        </CommandItem>
-                      ))}
-                    </CommandList>
-                  </CommandGroup>
-                </Command>
+                <div className="flex flex-col">
+                  {/* Debug info */}
+                  <div className="p-2 text-xs text-muted-foreground border-b">
+                    Debug: users.length = {users.length}, usersLoading ={' '}
+                    {usersLoading.toString()}
+                  </div>
+                  {users.length === 0 ? (
+                    <div className="py-6 text-center text-sm text-muted-foreground">
+                      {usersLoading ? 'Loading users...' : 'No users found.'}
+                    </div>
+                  ) : (
+                    users.map((user) => (
+                      <Button
+                        key={user.id}
+                        variant="ghost"
+                        role="option"
+                        onClick={() => handleUserSelect(user)}
+                        className="justify-start text-left"
+                      >
+                        <Users className="h-4 w-4 mr-2" />
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">{user.name}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {user.email} • {user.role}
+                          </span>
+                        </div>
+                        <Check
+                          className={`ml-auto h-4 w-4 ${
+                            selectedUser?.id === user.id
+                              ? 'opacity-100'
+                              : 'opacity-0'
+                          }`}
+                        />
+                      </Button>
+                    ))
+                  )}
+                </div>
               </PopoverContent>
             </Popover>
 

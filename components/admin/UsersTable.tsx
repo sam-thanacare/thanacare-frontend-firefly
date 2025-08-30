@@ -42,7 +42,7 @@ export function UsersTable({ onPasswordReset }: UsersTableProps) {
     try {
       setLoading(true);
       const backendUrl =
-        process.env.THANACARE_BACKEND || 'http://localhost:8080';
+        process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
       const response = await fetch(`${backendUrl}/api/admin/users`, {
         headers: {
           Authorization: `Bearer ${token}`,

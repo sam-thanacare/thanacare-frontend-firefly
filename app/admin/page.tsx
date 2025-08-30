@@ -68,7 +68,7 @@ export default function AdminDashboard() {
     try {
       setStatsLoading(true);
       const backendUrl =
-        process.env.THANACARE_BACKEND || 'http://localhost:8080';
+        process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
 
       // Fetch users count
       const usersResponse = await fetch(`${backendUrl}/api/admin/users`, {
