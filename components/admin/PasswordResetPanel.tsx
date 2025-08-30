@@ -16,6 +16,8 @@ import {
   XCircle,
   Users,
   ChevronDown,
+  AlertTriangle,
+  Info,
 } from 'lucide-react';
 import {
   Popover,
@@ -57,18 +59,29 @@ export function PasswordResetPanel({
   const [generatedPassword, setGeneratedPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{
-    type: 'success' | 'error';
+    type: 'success' | 'error' | 'info';
     text: string;
   } | null>(null);
   const [copied, setCopied] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [showUserSelector, setShowUserSelector] = useState(false);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [lastResetUser, setLastResetUser] = useState<User | null>(null);
 
   // Fetch users for selection
   const fetchUsers = useCallback(async () => {
-    if (!token) return;
+    if (!token) {
+      setMessage({
+        type: 'error',
+        text: 'Authentication required. Please login first.',
+      });
+      return;
+    }
 
     try {
+      setUsersLoading(true);
+      setMessage(null);
+
       const backendUrl =
         process.env.THANACARE_BACKEND || 'http://localhost:8080';
       const response = await fetch(`${backendUrl}/api/admin/users`, {
@@ -79,13 +92,33 @@ export function PasswordResetPanel({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch users');
+        if (response.status === 401) {
+          throw new Error('Authentication expired. Please login again.');
+        } else if (response.status === 403) {
+          throw new Error('Access denied. Admin privileges required.');
+        } else {
+          throw new Error(`Failed to fetch users: ${response.status}`);
+        }
       }
 
       const data = await response.json();
-      setUsers(data.data || []);
+      const usersList = data.data || [];
+      setUsers(usersList);
+
+      if (usersList.length === 0) {
+        setMessage({
+          type: 'info',
+          text: 'No users found in the system.',
+        });
+      }
     } catch (err) {
       console.error('Error fetching users:', err);
+      setMessage({
+        type: 'error',
+        text: err instanceof Error ? err.message : 'Failed to fetch users',
+      });
+    } finally {
+      setUsersLoading(false);
     }
   }, [token]);
 
@@ -93,24 +126,42 @@ export function PasswordResetPanel({
     fetchUsers();
   }, [fetchUsers]);
 
-  // Update selected user when prop changes
+  // Initialize selected user when component mounts or prop changes
   useEffect(() => {
+    console.log(
+      'PasswordResetPanel: propSelectedUser changed:',
+      propSelectedUser
+    );
     if (propSelectedUser !== undefined) {
       setSelectedUser(propSelectedUser);
+      // Clear any previous messages when user changes
+      setMessage(null);
+      // Clear any previous generated password when user changes
+      setGeneratedPassword('');
+      setNewPassword('');
     }
   }, [propSelectedUser]);
 
   const handleUserSelect = (user: User) => {
-    setSelectedUser(user);
+    console.log('PasswordResetPanel: User selected:', user);
     setShowUserSelector(false);
     onUserSelectionChange?.(user);
+    setMessage(null); // Clear any previous messages
   };
 
   const generateSecurePassword = async () => {
-    if (!token) return;
+    if (!token) {
+      setMessage({
+        type: 'error',
+        text: 'Authentication required. Please login first.',
+      });
+      return;
+    }
 
     try {
       setLoading(true);
+      setMessage(null);
+
       const backendUrl =
         process.env.THANACARE_BACKEND || 'http://localhost:8080';
       const response = await fetch(
@@ -125,13 +176,26 @@ export function PasswordResetPanel({
       );
 
       if (!response.ok) {
-        throw new Error('Failed to generate password');
+        if (response.status === 401) {
+          throw new Error('Authentication expired. Please login again.');
+        } else if (response.status === 403) {
+          throw new Error('Access denied. Admin privileges required.');
+        } else {
+          throw new Error(`Failed to generate password: ${response.status}`);
+        }
       }
 
       const data = await response.json();
-      setGeneratedPassword(data.data.password);
-      setNewPassword(data.data.password);
+      const password = data.data.password;
+      setGeneratedPassword(password);
+      setNewPassword(password);
+
+      setMessage({
+        type: 'success',
+        text: 'Secure password generated successfully!',
+      });
     } catch (err) {
+      console.error('Error generating password:', err);
       setMessage({
         type: 'error',
         text:
@@ -151,10 +215,26 @@ export function PasswordResetPanel({
       return;
     }
 
-    if (!token) return;
+    if (!token) {
+      setMessage({
+        type: 'error',
+        text: 'Authentication required. Please login first.',
+      });
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setMessage({
+        type: 'error',
+        text: 'Password must be at least 8 characters long',
+      });
+      return;
+    }
 
     try {
       setLoading(true);
+      setMessage(null);
+
       const backendUrl =
         process.env.THANACARE_BACKEND || 'http://localhost:8080';
       const response = await fetch(`${backendUrl}/api/admin/reset-password`, {
@@ -170,8 +250,16 @@ export function PasswordResetPanel({
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to reset password');
+        if (response.status === 401) {
+          throw new Error('Authentication expired. Please login again.');
+        } else if (response.status === 403) {
+          throw new Error('Access denied. Admin privileges required.');
+        } else if (response.status === 400) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Invalid request data');
+        } else {
+          throw new Error(`Failed to reset password: ${response.status}`);
+        }
       }
 
       setMessage({
@@ -179,11 +267,21 @@ export function PasswordResetPanel({
         text: `Password successfully reset for ${selectedUser.name}`,
       });
 
-      // Clear form
+      // Store the last reset user for reference
+      setLastResetUser(selectedUser);
+
+      // Clear form and selection
       setSelectedUser(null);
       setNewPassword('');
       setGeneratedPassword('');
+
+      // Notify parent component that user selection should be cleared
+      onUserSelectionChange?.(null);
+
+      // Refresh users list to ensure data is current
+      fetchUsers();
     } catch (err) {
+      console.error('Error resetting password:', err);
       setMessage({
         type: 'error',
         text: err instanceof Error ? err.message : 'Failed to reset password',
@@ -200,13 +298,66 @@ export function PasswordResetPanel({
       await navigator.clipboard.writeText(generatedPassword);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+
+      setMessage({
+        type: 'success',
+        text: 'Password copied to clipboard!',
+      });
     } catch (err) {
       console.error('Failed to copy password:', err);
+      setMessage({
+        type: 'error',
+        text: 'Failed to copy password to clipboard',
+      });
     }
+  };
+
+  const clearMessage = () => {
+    setMessage(null);
   };
 
   return (
     <div className="space-y-6">
+      {/* Status Messages */}
+      {message && (
+        <Alert
+          variant={message.type === 'error' ? 'destructive' : 'default'}
+          className="animate-in slide-in-from-top-2"
+        >
+          <AlertDescription className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              {message.type === 'success' ? (
+                <Check className="h-4 w-4" />
+              ) : message.type === 'error' ? (
+                <XCircle className="h-4 w-4" />
+              ) : (
+                <Info className="h-4 w-4" />
+              )}
+              <span>{message.text}</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearMessage}
+              className="h-6 w-6 p-0"
+            >
+              <XCircle className="h-3 w-3" />
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Last Reset Success */}
+      {lastResetUser && (
+        <Alert className="border-green-200 bg-green-50">
+          <Check className="h-4 w-4 text-green-600" />
+          <AlertDescription>
+            <strong>Success!</strong> Password was reset for{' '}
+            <strong>{lastResetUser.name}</strong> ({lastResetUser.email})
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Password Generation Card */}
       <Card className="border-dashed">
         <CardHeader>
@@ -224,7 +375,7 @@ export function PasswordResetPanel({
           <div className="flex flex-col sm:flex-row gap-4">
             <Button
               onClick={generateSecurePassword}
-              disabled={loading}
+              disabled={loading || usersLoading}
               className="flex items-center space-x-2 w-fit"
               variant="outline"
             >
@@ -250,6 +401,7 @@ export function PasswordResetPanel({
                     size="sm"
                     onClick={copyToClipboard}
                     className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                    title="Copy to clipboard"
                   >
                     {copied ? (
                       <Check className="h-4 w-4 text-green-600" />
@@ -272,9 +424,13 @@ export function PasswordResetPanel({
 
           {generatedPassword && (
             <Alert>
-              <AlertDescription>
-                This 12-character password includes uppercase, lowercase,
-                numbers, and special characters for maximum security.
+              <AlertDescription className="flex items-center space-x-2">
+                <Info className="h-4 w-4" />
+                <span>
+                  This {generatedPassword.length}-character password includes
+                  uppercase, lowercase, numbers, and special characters for
+                  maximum security.
+                </span>
               </AlertDescription>
             </Alert>
           )}
@@ -296,6 +452,7 @@ export function PasswordResetPanel({
           {/* User Selection */}
           <div className="space-y-2">
             <Label className="text-sm font-medium">Select User</Label>
+
             <Popover open={showUserSelector} onOpenChange={setShowUserSelector}>
               <PopoverTrigger asChild>
                 <Button
@@ -303,8 +460,14 @@ export function PasswordResetPanel({
                   role="combobox"
                   aria-expanded={showUserSelector}
                   className="w-full justify-between"
+                  disabled={usersLoading}
                 >
-                  {selectedUser ? (
+                  {usersLoading ? (
+                    <div className="flex items-center space-x-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Loading users...</span>
+                    </div>
+                  ) : selectedUser ? (
                     <div className="flex items-center space-x-2">
                       <Users className="h-4 w-4" />
                       <span className="truncate">
@@ -322,7 +485,9 @@ export function PasswordResetPanel({
               <PopoverContent className="w-full p-0" align="start">
                 <Command>
                   <CommandInput placeholder="Search users..." />
-                  <CommandEmpty>No users found.</CommandEmpty>
+                  <CommandEmpty>
+                    {usersLoading ? 'Loading users...' : 'No users found.'}
+                  </CommandEmpty>
                   <CommandGroup>
                     <CommandList>
                       {users.map((user) => (
@@ -336,7 +501,7 @@ export function PasswordResetPanel({
                             <div className="flex flex-col">
                               <span className="font-medium">{user.name}</span>
                               <span className="text-sm text-muted-foreground">
-                                {user.email}
+                                {user.email} • {user.role}
                               </span>
                             </div>
                           </div>
@@ -354,6 +519,41 @@ export function PasswordResetPanel({
                 </Command>
               </PopoverContent>
             </Popover>
+
+            {/* Show selected user info */}
+            {selectedUser && (
+              <div className="mt-2 p-3 bg-muted/50 rounded-md border">
+                <div className="flex items-center space-x-2">
+                  <Users className="h-4 w-4 text-primary" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Selected User</p>
+                    <p className="text-xs text-muted-foreground">
+                      {selectedUser.name} ({selectedUser.email}) •{' '}
+                      {selectedUser.role}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedUser(null);
+                      onUserSelectionChange?.(null);
+                    }}
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                    title="Clear selection"
+                  >
+                    <XCircle className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {users.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                Found {users.length} user{users.length !== 1 ? 's' : ''} in the
+                system
+              </p>
+            )}
           </div>
 
           {/* Password Input */}
@@ -369,9 +569,23 @@ export function PasswordResetPanel({
               placeholder="Enter new password or use generated one"
               className="font-mono"
             />
-            <p className="text-xs text-muted-foreground">
-              Password must be at least 8 characters long
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">
+                Password must be at least 8 characters long
+              </p>
+              {newPassword.length > 0 && (
+                <div className="flex items-center space-x-2">
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      newPassword.length >= 8 ? 'bg-green-500' : 'bg-yellow-500'
+                    }`}
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    {newPassword.length}/8 characters
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Reset Button */}
@@ -380,6 +594,7 @@ export function PasswordResetPanel({
               onClick={resetPassword}
               disabled={
                 loading ||
+                usersLoading ||
                 !selectedUser ||
                 !newPassword.trim() ||
                 newPassword.length < 8
@@ -396,26 +611,11 @@ export function PasswordResetPanel({
 
             {!selectedUser && (
               <div className="flex items-center space-x-2 text-sm text-muted-foreground bg-muted/50 px-3 py-2 rounded-md">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                <AlertTriangle className="h-4 w-4 text-yellow-500" />
                 <span>Please select a user first</span>
               </div>
             )}
           </div>
-
-          {message && (
-            <Alert
-              variant={message.type === 'error' ? 'destructive' : 'default'}
-            >
-              <AlertDescription className="flex items-center space-x-2">
-                {message.type === 'success' ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  <XCircle className="h-4 w-4" />
-                )}
-                <span>{message.text}</span>
-              </AlertDescription>
-            </Alert>
-          )}
         </CardContent>
       </Card>
 

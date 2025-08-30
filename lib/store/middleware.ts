@@ -3,14 +3,6 @@ import { clearStoredTokens, loginSuccess, logout } from './slices/authSlice';
 import { storeToken, clearStoredTokens as clearTokens } from '../utils/auth';
 
 export const authMiddleware: Middleware = () => (next) => (action) => {
-  // Add logging for all actions to help debug
-  const actionWithType = action as { type: string; payload?: unknown };
-  console.log(
-    'AuthMiddleware - Action dispatched:',
-    actionWithType.type,
-    actionWithType.payload
-  );
-
   // Handle token storage when login is successful
   if (loginSuccess.match(action)) {
     const { token, rememberMe } = action.payload;

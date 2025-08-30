@@ -1,16 +1,21 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { persistStore, persistReducer } from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
 import authReducer from './slices/authSlice';
 import themeReducer from './slices/themeSlice';
 import cookieReducer from './slices/cookieSlice';
 import { authMiddleware } from './middleware';
+import { reduxStorage, isClient } from './storage';
 
 // Configure persistence for auth slice only
 const authPersistConfig = {
   key: 'auth',
-  storage,
+  storage: reduxStorage,
   whitelist: ['user', 'token', 'isAuthenticated'], // Exclude rememberMe from persistence
+  // Prevent persistence during SSR
+  skip: !isClient(),
+  // Add these options to prevent SSR issues
+  serialize: true,
+  deserialize: true,
 };
 
 const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
@@ -24,7 +29,14 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+        ignoredActions: [
+          'persist/PERSIST',
+          'persist/REHYDRATE',
+          'persist/PAUSE',
+          'persist/PURGE',
+          'persist/REGISTER',
+          'persist/FLUSH',
+        ],
       },
     }).concat(authMiddleware),
 });

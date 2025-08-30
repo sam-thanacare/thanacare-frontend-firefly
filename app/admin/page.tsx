@@ -130,12 +130,21 @@ export default function AdminDashboard() {
   };
 
   const handlePasswordResetRequest = (user: User) => {
+    console.log('Admin Dashboard: Password reset requested for user:', user);
+    // Use callback to ensure state is updated before tab switch
     setSelectedUserForPasswordReset(user);
+    // Switch tabs after state update
     setActiveTab('password-reset');
   };
 
   const handleUserSelectionChange = (user: User | null) => {
+    console.log('Admin Dashboard: User selection changed:', user);
     setSelectedUserForPasswordReset(user);
+
+    // If no user is selected, switch back to users tab
+    if (!user && activeTab === 'password-reset') {
+      setActiveTab('users');
+    }
   };
 
   return (
@@ -244,10 +253,54 @@ export default function AdminDashboard() {
               </Card>
             </div>
 
+            {/* Selected User Indicator */}
+            {selectedUserForPasswordReset && (
+              <Card className="border-blue-200 bg-blue-50">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
+                        <Users className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-blue-900">
+                          Password Reset Mode
+                        </p>
+                        <p className="text-xs text-blue-700">
+                          Working with:{' '}
+                          <strong>{selectedUserForPasswordReset.name}</strong> (
+                          {selectedUserForPasswordReset.email})
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedUserForPasswordReset(null);
+                        setActiveTab('users');
+                      }}
+                      className="text-blue-700 hover:text-blue-900 hover:bg-blue-100"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Main Tabs */}
             <Tabs
               value={activeTab}
-              onValueChange={setActiveTab}
+              onValueChange={(value) => {
+                console.log(
+                  'Admin Dashboard: Tab changed from',
+                  activeTab,
+                  'to',
+                  value
+                );
+                setActiveTab(value);
+              }}
               className="space-y-6"
             >
               <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
@@ -323,6 +376,7 @@ export default function AdminDashboard() {
                     <PasswordResetPanel
                       selectedUser={selectedUserForPasswordReset}
                       onUserSelectionChange={handleUserSelectionChange}
+                      key={`password-reset-${selectedUserForPasswordReset?.id || 'no-user'}`} // Force re-render when user changes
                     />
                   </CardContent>
                 </Card>
