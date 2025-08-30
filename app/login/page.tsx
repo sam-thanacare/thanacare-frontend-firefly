@@ -28,12 +28,6 @@ import {
 } from '@/lib/store/slices/authSlice';
 import { ThemeToggle } from '@/components/theme-toggle';
 import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-} from '@/components/ui/navigation-menu';
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -315,17 +309,6 @@ export default function LoginPage() {
               height={40}
               priority
             />
-            <NavigationMenu>
-              <NavigationMenuList>
-                <NavigationMenuItem>
-                  <NavigationMenuLink asChild>
-                    <Link href="/guest">
-                      <Button variant="ghost">Explore as Guest</Button>
-                    </Link>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-              </NavigationMenuList>
-            </NavigationMenu>
             <ThemeToggle />
           </div>
         </nav>

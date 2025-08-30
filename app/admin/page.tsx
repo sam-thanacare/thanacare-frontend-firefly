@@ -29,9 +29,7 @@ interface LoginRecord {
 export default function AdminDashboard() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { user, token, isAuthenticated } = useAppSelector(
-    (state) => state.auth
-  );
+  const { user, token } = useAppSelector((state) => state.auth);
   const [activeTab, setActiveTab] = useState('users');
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -43,16 +41,6 @@ export default function AdminDashboard() {
     uniqueIPs: 0,
   });
   const [statsLoading, setStatsLoading] = useState(true);
-
-  // Debug: Log current auth state
-  useEffect(() => {
-    console.log('Admin Dashboard Auth State:', {
-      user,
-      token: token ? 'Present' : 'Missing',
-      isAuthenticated,
-      userRole: user?.role,
-    });
-  }, [user, token, isAuthenticated]);
 
   // Fetch dashboard statistics
   const fetchStats = useCallback(async () => {
@@ -191,7 +179,7 @@ export default function AdminDashboard() {
         <main className="container mx-auto px-4 py-6">
           <div className="space-y-6">
             {/* Stats Overview */}
-            <div className="grid gap-4 md:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-3">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -255,22 +243,6 @@ export default function AdminDashboard() {
                     {statsLoading
                       ? 'Total authentication events'
                       : `${stats.successfulLogins} successful, ${stats.failedLogins} failed`}
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    System Health
-                  </CardTitle>
-                  <Shield className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-green-600">
-                    Healthy
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    All systems operational
                   </p>
                 </CardContent>
               </Card>

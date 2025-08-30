@@ -52,11 +52,6 @@ export function PasswordResetPanel() {
 
   // Fetch users for selection
   const fetchUsers = useCallback(async () => {
-    console.log(
-      'PasswordResetPanel: fetchUsers called, token:',
-      token ? 'Present' : 'Missing'
-    );
-
     if (!token) {
       setMessage({
         type: 'error',
@@ -71,7 +66,6 @@ export function PasswordResetPanel() {
 
       const backendUrl =
         process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
-      console.log('PasswordResetPanel: Fetching from backend URL:', backendUrl);
 
       const response = await fetch(`${backendUrl}/api/admin/users`, {
         headers: {
@@ -79,12 +73,6 @@ export function PasswordResetPanel() {
           'Content-Type': 'application/json',
         },
       });
-
-      console.log('PasswordResetPanel: Response status:', response.status);
-      console.log(
-        'PasswordResetPanel: Response headers:',
-        Object.fromEntries(response.headers.entries())
-      );
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -98,10 +86,6 @@ export function PasswordResetPanel() {
 
       const data = await response.json();
       const usersList = data.data || [];
-      console.log('PasswordResetPanel: Fetched users data:', {
-        data,
-        usersList,
-      });
       setUsers(usersList);
 
       if (usersList.length === 0) {
@@ -122,20 +106,11 @@ export function PasswordResetPanel() {
   }, [token]);
 
   useEffect(() => {
-    console.log(
-      'PasswordResetPanel: Component mounted, token:',
-      token ? 'Present' : 'Missing'
-    );
     fetchUsers();
-  }, [fetchUsers, token]);
-
-  // Debug: Log when users state changes
-  useEffect(() => {
-    console.log('PasswordResetPanel: Users state changed:', users);
-  }, [users]);
+  }, [fetchUsers]);
 
   const handleUserSelect = (user: User) => {
-    console.log('PasswordResetPanel: User selected:', user);
+    setSelectedUser(user);
     setShowUserSelector(false);
     setMessage(null); // Clear any previous messages
   };
@@ -472,11 +447,6 @@ export function PasswordResetPanel() {
               </PopoverTrigger>
               <PopoverContent className="w-full p-0" align="start">
                 <div className="flex flex-col">
-                  {/* Debug info */}
-                  <div className="p-2 text-xs text-muted-foreground border-b">
-                    Debug: users.length = {users.length}, usersLoading ={' '}
-                    {usersLoading.toString()}
-                  </div>
                   {users.length === 0 ? (
                     <div className="py-6 text-center text-sm text-muted-foreground">
                       {usersLoading ? 'Loading users...' : 'No users found.'}
@@ -488,17 +458,19 @@ export function PasswordResetPanel() {
                         variant="ghost"
                         role="option"
                         onClick={() => handleUserSelect(user)}
-                        className="justify-start text-left"
+                        className="justify-start text-left w-full rounded-none border-b last:border-b-0 hover:bg-muted/50"
                       >
-                        <Users className="h-4 w-4 mr-2" />
-                        <div className="flex flex-col items-start">
-                          <span className="font-medium">{user.name}</span>
+                        <Users className="h-4 w-4 mr-2 text-muted-foreground" />
+                        <div className="flex flex-col items-start flex-1">
+                          <span className="font-medium text-left">
+                            {user.name}
+                          </span>
                           <span className="text-sm text-muted-foreground">
-                            {user.email} • {user.role}
+                            {user.role}
                           </span>
                         </div>
                         <Check
-                          className={`ml-auto h-4 w-4 ${
+                          className={`ml-auto h-4 w-4 text-primary ${
                             selectedUser?.id === user.id
                               ? 'opacity-100'
                               : 'opacity-0'
