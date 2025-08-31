@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   env: {
     NEXT_PUBLIC_THANACARE_BACKEND:
-      process.env.THANACARE_BACKEND || 'http://localhost:8080',
+      process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080',
     // Additional CORS-related environment variables for frontend configuration
     NEXT_PUBLIC_CORS_ENABLED: process.env.CORS_ENABLED || 'true',
     NEXT_PUBLIC_API_TIMEOUT: process.env.API_TIMEOUT || '10000',

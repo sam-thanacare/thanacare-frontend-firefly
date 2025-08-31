@@ -33,9 +33,8 @@ pnpm install
 
 Create a `.env.local` file in the root directory:
 
-```env
-THANACARE_BACKEND=http://localhost:8080
-```
+````env
+NEXT_PUBLIC_THANACARE_BACKEND=http://localhost:8080
 
 ### Development
 
@@ -47,7 +46,7 @@ npm run dev
 yarn dev
 # or
 pnpm dev
-```
+````
 
 Open [http://localhost:3000](http://localhost:3000) with your browser. The app will automatically redirect to the login page.
 
@@ -60,7 +59,7 @@ Build and run with Docker:
 docker build -t thanacare-frontend .
 
 # Run the container
-docker run -p 3000:3000 -e THANACARE_BACKEND=http://your-backend-url thanacare-frontend
+docker run -p 3000:3000 -e NEXT_PUBLIC_THANACARE_BACKEND=http://your-backend-url thanacare-frontend
 ```
 
 Or use Docker Compose:
