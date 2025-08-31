@@ -5,6 +5,7 @@ export interface User {
   name: string;
   email: string;
   role: string;
+  profile_picture_url?: string;
 }
 
 interface AuthState {
@@ -66,6 +67,11 @@ const authSlice = createSlice({
       // This action will be handled by a middleware to clear localStorage/sessionStorage
       // The state itself doesn't change, but we mark it for the middleware
     },
+    updateProfilePicture: (state: AuthState, action: PayloadAction<string>) => {
+      if (state.user) {
+        state.user.profile_picture_url = action.payload;
+      }
+    },
   },
 });
 
@@ -76,6 +82,7 @@ export const {
   logout,
   clearError,
   clearStoredTokens,
+  updateProfilePicture,
 } = authSlice.actions;
 
 export default authSlice.reducer;

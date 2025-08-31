@@ -32,6 +32,12 @@ interface Organization {
   name: string;
   created_by: string;
   created_at: string;
+  creator: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
 }
 
 interface CreateOrganizationRequest {
@@ -376,7 +382,7 @@ export function OrganizationsTable() {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Organization ID</TableHead>
-                  <TableHead>Created By</TableHead>
+                  <TableHead>Creator</TableHead>
                   <TableHead>Created At</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -405,9 +411,14 @@ export function OrganizationsTable() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className="text-xs">
-                        {org.created_by}
-                      </Badge>
+                      <div className="flex flex-col space-y-1">
+                        <Badge variant="secondary" className="text-xs">
+                          {org.creator.name}
+                        </Badge>
+                        <div className="text-xs text-muted-foreground">
+                          {org.creator.role} • {org.creator.email}
+                        </div>
+                      </div>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {formatDate(org.created_at)}

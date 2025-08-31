@@ -9,11 +9,22 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, Users, Shield, Key, Activity, Building2 } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  LogOut,
+  Users,
+  Shield,
+  Key,
+  Activity,
+  Building2,
+  Camera,
+} from 'lucide-react';
 import { UsersTable } from '@/components/admin/UsersTable';
 import { LoginRecordsTable } from '@/components/admin/LoginRecordsTable';
 import { PasswordResetPanel } from '@/components/admin/PasswordResetPanel';
 import { OrganizationsTable } from '@/components/admin/OrganizationsTable';
+import { ProfilePictureUpload } from '@/components/admin/ProfilePictureUpload';
+import { useAuth } from '@/lib/hooks/useAuth';
 
 interface LoginRecord {
   id: string;
@@ -29,7 +40,10 @@ interface LoginRecord {
 export default function AdminDashboard() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { user, token } = useAppSelector((state) => state.auth);
+  const { user, token, isAuthenticated } = useAppSelector(
+    (state) => state.auth
+  );
+  const { refreshUserProfile } = useAuth();
   const [activeTab, setActiveTab] = useState('users');
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -41,6 +55,20 @@ export default function AdminDashboard() {
     uniqueIPs: 0,
   });
   const [statsLoading, setStatsLoading] = useState(true);
+
+  // Refresh user profile on component mount to ensure profile picture is up to date
+  useEffect(() => {
+    if (isAuthenticated && token) {
+      refreshUserProfile();
+    }
+  }, [isAuthenticated, token, refreshUserProfile]);
+
+  // Callback to refresh profile data when profile picture is updated
+  const handleProfileUpdate = useCallback(() => {
+    if (isAuthenticated && token) {
+      refreshUserProfile();
+    }
+  }, [isAuthenticated, token, refreshUserProfile]);
 
   // Fetch dashboard statistics
   const fetchStats = useCallback(async () => {
@@ -166,6 +194,23 @@ export default function AdminDashboard() {
                   <Shield className="h-3 w-3" />
                   <span className="text-xs font-medium">Administrator</span>
                 </Badge>
+                <div className="flex items-center space-x-3">
+                  <Avatar
+                    className="h-8 w-8"
+                    key={user?.profile_picture_url || 'no-picture'}
+                  >
+                    <AvatarImage
+                      src={user?.profile_picture_url || undefined}
+                      alt={user?.name || 'Profile'}
+                    />
+                    <AvatarFallback className="text-sm">
+                      {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium hidden sm:block">
+                    {user?.name}
+                  </span>
+                </div>
                 <Button variant="outline" size="sm" onClick={handleLogout}>
                   <LogOut className="h-4 w-4 mr-2" />
                   Logout
@@ -262,7 +307,7 @@ export default function AdminDashboard() {
               }}
               className="space-y-6"
             >
-              <TabsList className="grid w-full grid-cols-4 lg:w-[500px]">
+              <TabsList className="grid w-full grid-cols-5 lg:w-[600px]">
                 <TabsTrigger
                   value="users"
                   className="flex items-center space-x-2"
@@ -290,6 +335,13 @@ export default function AdminDashboard() {
                 >
                   <Key className="h-4 w-4" />
                   <span className="hidden sm:inline">Security</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="profile"
+                  className="flex items-center space-x-2"
+                >
+                  <Camera className="h-4 w-4" />
+                  <span className="hidden sm:inline">Profile</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -360,6 +412,10 @@ export default function AdminDashboard() {
                     <PasswordResetPanel />
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              <TabsContent value="profile" className="space-y-6">
+                <ProfilePictureUpload onUpdate={handleProfileUpdate} />
               </TabsContent>
             </Tabs>
           </div>
