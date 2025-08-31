@@ -163,7 +163,7 @@ export default function LoginPage() {
 
     try {
       const backendUrl =
-        process.env.THANACARE_BACKEND || 'http://localhost:8080';
+        process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
       const response = await fetch(`${backendUrl}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -214,7 +214,7 @@ export default function LoginPage() {
     setRegisterLoading(true);
     try {
       const backendUrl =
-        process.env.THANACARE_BACKEND || 'http://localhost:8080';
+        process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
 
       // Determine the correct endpoint based on role
       let endpoint = '';
