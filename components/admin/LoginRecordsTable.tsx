@@ -305,7 +305,7 @@ export function LoginRecordsTable() {
           <p className="font-medium text-destructive">Failed to load records</p>
           <p className="text-sm text-muted-foreground">{error}</p>
         </div>
-        <Button onClick={fetchLoginRecords} variant="outline" size="sm">
+        <Button onClick={() => fetchLoginRecords()} variant="outline" size="sm">
           <Loader2 className="h-4 w-4 mr-2" />
           Retry
         </Button>
