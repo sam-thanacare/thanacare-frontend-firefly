@@ -22,7 +22,7 @@ export default function TestPasswordReset() {
     'c1906fb5-2c22-431d-aba0-1b5ae85cc9c3'
   );
 
-  const backendUrl = process.env.THANACARE_BACKEND || 'http://localhost:8080';
+  const backendUrl = process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
 
   const handleLogin = async () => {
     setLoading(true);

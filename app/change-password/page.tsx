@@ -86,7 +86,7 @@ export default function ChangePasswordPage() {
 
     try {
       const backendUrl =
-        process.env.THANACARE_BACKEND || 'http://localhost:8080';
+        process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
       const response = await fetch(`${backendUrl}/auth/change-password`, {
         method: 'POST',
         headers: {

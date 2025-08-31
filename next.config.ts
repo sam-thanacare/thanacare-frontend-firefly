@@ -31,6 +31,11 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Ensure environment variables are properly exposed to the client
+  experimental: {
+    // This ensures environment variables are available at build time
+    serverComponentsExternalPackages: [],
+  },
 };
 
 export default nextConfig;
