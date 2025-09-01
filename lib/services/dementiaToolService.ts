@@ -298,12 +298,14 @@ class DementiaToolService {
   async generatePDF(assignmentId: string): Promise<Blob> {
     const headers = await this.getAuthHeaders();
     // Remove Content-Type for binary response
-    delete headers['Content-Type'];
+    const headersWithoutContentType = {
+      Authorization: (headers as Record<string, string>).Authorization,
+    };
 
     const response = await fetch(
       `${BACKEND_URL}/api/dementia-tool/pdf/assignment/${assignmentId}`,
       {
-        headers,
+        headers: headersWithoutContentType,
       }
     );
     if (!response.ok) {
@@ -316,12 +318,14 @@ class DementiaToolService {
   async generateAssignmentsPDF(trainerId: string): Promise<Blob> {
     const headers = await this.getAuthHeaders();
     // Remove Content-Type for binary response
-    delete headers['Content-Type'];
+    const headersWithoutContentType = {
+      Authorization: (headers as Record<string, string>).Authorization,
+    };
 
     const response = await fetch(
       `${BACKEND_URL}/api/dementia-tool/pdf/assignments/trainer/${trainerId}`,
       {
-        headers,
+        headers: headersWithoutContentType,
       }
     );
     if (!response.ok) {

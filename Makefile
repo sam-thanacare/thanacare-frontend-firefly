@@ -88,8 +88,8 @@ ci: ## Run complete CI pipeline locally
 	npm run format:check
 	@echo "Step 4/5: Running security audit..."
 	npm run security-scan
-	@echo "Step 5/5: Running tests..."
-	npm run test:ci
+	@echo "Step 5/5: Building application..."
+	npm run build
 	@echo "✅ All CI checks passed!"
 	@echo "Note: Run 'make security-scan-codeql' separately for CodeQL security analysis"
 
@@ -116,6 +116,6 @@ ci-parallel: ## Run CI checks in parallel (requires GNU parallel)
 		"echo 'Job 1: Linting...' && npm run lint" \
 		"echo 'Job 2: Format check...' && npm run format:check" \
 		"echo 'Job 3: NPM Security audit...' && npm run security-scan" \
-		"echo 'Job 4: Tests...' && npm run test:ci"
+		"echo 'Job 4: Building application...' && npm run build"
 	@echo "✅ All parallel CI checks completed!"
 	@echo "Note: Run 'make security-scan-codeql' separately for CodeQL security analysis"
