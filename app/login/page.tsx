@@ -197,8 +197,16 @@ export default function LoginPage() {
         console.log('Setting redirect to /admin');
         setRedirectPath('/admin');
         setShouldRedirect(true);
+      } else if (user.role === 'member') {
+        console.log('Setting redirect to /member');
+        setRedirectPath('/member');
+        setShouldRedirect(true);
+      } else if (user.role === 'trainer') {
+        console.log('Setting redirect to /trainer for trainer');
+        setRedirectPath('/trainer');
+        setShouldRedirect(true);
       } else {
-        console.log('Setting redirect to /guest');
+        console.log('Setting redirect to /guest for unknown role');
         setRedirectPath('/guest');
         setShouldRedirect(true);
       }
@@ -277,6 +285,10 @@ export default function LoginPage() {
       if (user.role === 'admin') {
         console.log('Setting redirect to /admin');
         setRedirectPath('/admin');
+        setShouldRedirect(true);
+      } else if (user.role === 'member') {
+        console.log('Setting redirect to /member');
+        setRedirectPath('/member');
         setShouldRedirect(true);
       } else {
         console.log('Setting redirect to /guest');

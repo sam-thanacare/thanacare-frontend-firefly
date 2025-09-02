@@ -20,6 +20,18 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
 import {
   Users,
   Clock,
@@ -27,7 +39,6 @@ import {
   AlertCircle,
   Eye,
   Plus,
-  RefreshCw,
 } from 'lucide-react';
 
 interface MemberProgress {
@@ -56,9 +67,9 @@ export default function TrainerDashboard() {
   const [memberProgress, setMemberProgress] = useState<MemberProgress[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<
-    'overview' | 'assignments' | 'assign'
-  >('overview');
+  const [selectedMember, setSelectedMember] = useState<string>('');
+  const [dueDate, setDueDate] = useState<string>('');
+  const [notes, setNotes] = useState<string>('');
 
   // Mock data for demonstration
   useEffect(() => {
@@ -212,7 +223,7 @@ export default function TrainerDashboard() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <RefreshCw className="h-8 w-8 animate-spin" />
+        <Spinner variant="circle" className="h-8 w-8" />
       </div>
     );
   }
@@ -226,40 +237,20 @@ export default function TrainerDashboard() {
             Monitor member progress and manage assignments
           </p>
         </div>
-        <Button onClick={() => setActiveTab('assign')}>
+        <Button>
           <Plus className="h-4 w-4 mr-2" />
           Assign Document
         </Button>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
-        <Button
-          variant={activeTab === 'overview' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('overview')}
-        >
-          Overview
-        </Button>
-        <Button
-          variant={activeTab === 'assignments' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('assignments')}
-        >
-          Assignments
-        </Button>
-        <Button
-          variant={activeTab === 'assign' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('assign')}
-        >
-          Assign Document
-        </Button>
-      </div>
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="assignments">Assignments</TabsTrigger>
+          <TabsTrigger value="assign">Assign Document</TabsTrigger>
+        </TabsList>
 
-      {/* Overview Tab */}
-      {activeTab === 'overview' && (
-        <div className="space-y-6">
+        <TabsContent value="overview" className="space-y-6">
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card>
@@ -402,136 +393,139 @@ export default function TrainerDashboard() {
               </Table>
             </CardContent>
           </Card>
-        </div>
-      )}
+        </TabsContent>
 
-      {/* Assignments Tab */}
-      {activeTab === 'assignments' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>All Assignments</CardTitle>
-            <CardDescription>
-              Detailed view of all dementia tool assignments
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Member</TableHead>
-                  <TableHead>Family</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Progress</TableHead>
-                  <TableHead>Assigned</TableHead>
-                  <TableHead>Due Date</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {assignments.map((assignment) => (
-                  <TableRow key={assignment.id}>
-                    <TableCell>
-                      <div className="flex items-center space-x-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src="" />
-                          <AvatarFallback>
-                            {assignment.memberName.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="font-medium">
-                          {assignment.memberName}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{assignment.familyName}</TableCell>
-                    <TableCell>{getStatusBadge(assignment.status)}</TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-sm">
-                          <span>{assignment.progress}%</span>
-                        </div>
-                        <Progress
-                          value={assignment.progress}
-                          className={`w-20 ${getProgressColor(assignment.progress)}`}
-                        />
-                      </div>
-                    </TableCell>
-                    <TableCell>{formatDate(assignment.assignedAt)}</TableCell>
-                    <TableCell>
-                      {assignment.dueDate
-                        ? formatDate(assignment.dueDate)
-                        : 'No due date'}
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4 mr-2" />
-                        View
-                      </Button>
-                    </TableCell>
+        <TabsContent value="assignments">
+          <Card>
+            <CardHeader>
+              <CardTitle>All Assignments</CardTitle>
+              <CardDescription>
+                Detailed view of all dementia tool assignments
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Member</TableHead>
+                    <TableHead>Family</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Progress</TableHead>
+                    <TableHead>Assigned</TableHead>
+                    <TableHead>Due Date</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
+                </TableHeader>
+                <TableBody>
+                  {assignments.map((assignment) => (
+                    <TableRow key={assignment.id}>
+                      <TableCell>
+                        <div className="flex items-center space-x-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src="" />
+                            <AvatarFallback>
+                              {assignment.memberName.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium">
+                            {assignment.memberName}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{assignment.familyName}</TableCell>
+                      <TableCell>{getStatusBadge(assignment.status)}</TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-sm">
+                            <span>{assignment.progress}%</span>
+                          </div>
+                          <Progress
+                            value={assignment.progress}
+                            className={`w-20 ${getProgressColor(assignment.progress)}`}
+                          />
+                        </div>
+                      </TableCell>
+                      <TableCell>{formatDate(assignment.assignedAt)}</TableCell>
+                      <TableCell>
+                        {assignment.dueDate
+                          ? formatDate(assignment.dueDate)
+                          : 'No due date'}
+                      </TableCell>
+                      <TableCell>
+                        <Button variant="outline" size="sm">
+                          <Eye className="h-4 w-4 mr-2" />
+                          View
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      {/* Assign Document Tab */}
-      {activeTab === 'assign' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Assign Dementia Tool Document</CardTitle>
-            <CardDescription>
-              Assign the Dementia Values & Priorities Tool to family members
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium">
-                    Select Family Member
-                  </label>
-                  <select className="w-full mt-1 p-2 border border-gray-300 rounded-md">
-                    <option>Select a member...</option>
-                    {memberProgress.map((member) => (
-                      <option key={member.memberId} value={member.memberId}>
-                        {member.memberName} - {member.familyName}
-                      </option>
-                    ))}
-                  </select>
+        <TabsContent value="assign">
+          <Card>
+            <CardHeader>
+              <CardTitle>Assign Dementia Tool Document</CardTitle>
+              <CardDescription>
+                Assign the Dementia Values & Priorities Tool to family members
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="member-select">Select Family Member</Label>
+                    <Select
+                      value={selectedMember}
+                      onValueChange={setSelectedMember}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a member..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {memberProgress.map((member) => (
+                          <SelectItem
+                            key={member.memberId}
+                            value={member.memberId}
+                          >
+                            {member.memberName} - {member.familyName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="due-date">Due Date (Optional)</Label>
+                    <Input
+                      id="due-date"
+                      type="date"
+                      value={dueDate}
+                      onChange={(e) => setDueDate(e.target.value)}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="text-sm font-medium">
-                    Due Date (Optional)
-                  </label>
-                  <input
-                    type="date"
-                    className="w-full mt-1 p-2 border border-gray-300 rounded-md"
+                <div className="space-y-2">
+                  <Label htmlFor="notes">Notes (Optional)</Label>
+                  <Textarea
+                    id="notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    rows={3}
+                    placeholder="Add any notes or instructions for the member..."
                   />
                 </div>
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline">Cancel</Button>
+                  <Button>Assign Document</Button>
+                </div>
               </div>
-              <div>
-                <label className="text-sm font-medium">Notes (Optional)</label>
-                <textarea
-                  className="w-full mt-1 p-2 border border-gray-300 rounded-md"
-                  rows={3}
-                  placeholder="Add any notes or instructions for the member..."
-                />
-              </div>
-              <div className="flex justify-end space-x-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setActiveTab('overview')}
-                >
-                  Cancel
-                </Button>
-                <Button>Assign Document</Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

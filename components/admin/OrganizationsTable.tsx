@@ -48,6 +48,19 @@ interface UpdateOrganizationRequest {
   name: string;
 }
 
+interface RawOrganization {
+  id: string;
+  name: string;
+  created_by: string;
+  created_at: string;
+  creator?: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+}
+
 export function OrganizationsTable() {
   const { token } = useAppSelector((state) => state.auth);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -82,7 +95,42 @@ export function OrganizationsTable() {
 
       if (response.ok) {
         const data = await response.json();
-        setOrganizations(data.data || []);
+        console.log('Organizations response:', data);
+
+        // Ensure we have valid data and add defensive checks
+        const orgs = data.data || [];
+        const validatedOrgs = orgs.map((org: RawOrganization) => {
+          // Ensure creator object exists and has required properties
+          if (!org.creator) {
+            console.warn('Organization missing creator:', org);
+            org.creator = {
+              id: 'unknown',
+              name: 'Unknown Creator',
+              email: 'unknown@example.com',
+              role: 'unknown',
+            };
+          } else if (
+            !org.creator.name ||
+            !org.creator.email ||
+            !org.creator.role
+          ) {
+            console.warn(
+              'Organization creator missing properties:',
+              org.creator
+            );
+            org.creator = {
+              id: org.creator.id || 'unknown',
+              name: org.creator.name || 'Unknown Creator',
+              email: org.creator.email || 'unknown@example.com',
+              role: org.creator.role || 'unknown',
+            };
+          }
+
+          return org;
+        });
+
+        console.log('Validated organizations:', validatedOrgs);
+        setOrganizations(validatedOrgs);
       } else {
         console.error('Failed to fetch organizations');
         setAlert({ type: 'error', message: 'Failed to fetch organizations' });
@@ -270,13 +318,22 @@ export function OrganizationsTable() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    try {
+      if (!dateString) return 'Unknown Date';
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'Invalid Date';
+
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch (error) {
+      console.error('Error formatting date:', dateString, error);
+      return 'Invalid Date';
+    }
   };
 
   return (
@@ -390,11 +447,13 @@ export function OrganizationsTable() {
               <TableBody>
                 {organizations.map((org) => (
                   <TableRow key={org.id}>
-                    <TableCell className="font-medium">{org.name}</TableCell>
+                    <TableCell className="font-medium">
+                      {org.name || 'Unnamed Organization'}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
                         <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm">
-                          {org.id}
+                          {org.id || 'No ID'}
                         </code>
                         <Button
                           variant="ghost"
@@ -413,15 +472,18 @@ export function OrganizationsTable() {
                     <TableCell>
                       <div className="flex flex-col space-y-1">
                         <Badge variant="secondary" className="text-xs">
-                          {org.creator.name}
+                          {org.creator?.name || 'Unknown Creator'}
                         </Badge>
                         <div className="text-xs text-muted-foreground">
-                          {org.creator.role} • {org.creator.email}
+                          {org.creator?.role || 'Unknown'} •{' '}
+                          {org.creator?.email || 'unknown@example.com'}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {formatDate(org.created_at)}
+                      {org.created_at
+                        ? formatDate(org.created_at)
+                        : 'Unknown Date'}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end space-x-2">

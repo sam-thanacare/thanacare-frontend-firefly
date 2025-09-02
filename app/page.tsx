@@ -28,9 +28,15 @@ export default function Home() {
         if (user.role === 'admin') {
           console.log('Home page - Redirecting admin to /admin');
           router.replace('/admin');
+        } else if (user.role === 'trainer') {
+          console.log('Home page - Redirecting trainer to /trainer');
+          router.replace('/trainer');
+        } else if (user.role === 'member') {
+          console.log('Home page - Redirecting member to /member');
+          router.replace('/member');
         } else {
-          // For other roles (trainer, member), redirect to the dashboard
-          console.log('Home page - Redirecting user to /dashboard');
+          // For unknown roles, redirect to the dashboard
+          console.log('Home page - Redirecting unknown role to /dashboard');
           router.replace('/dashboard');
         }
       } else {

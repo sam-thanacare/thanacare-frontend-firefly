@@ -33,8 +33,14 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       }
 
       if (user && user.role !== 'admin') {
-        console.log('AdminLayout - Not admin, redirecting to guest page');
-        router.push('/guest');
+        console.log('AdminLayout - Not admin, redirecting to appropriate page');
+        if (user.role === 'trainer') {
+          router.push('/trainer');
+        } else if (user.role === 'member') {
+          router.push('/member');
+        } else {
+          router.push('/guest');
+        }
         return;
       }
 
@@ -84,12 +90,30 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 ? 'User information not available.'
                 : "You don't have permission to access this page. Admin privileges are required."}
             </p>
-            <button
-              onClick={() => router.push('/guest')}
-              className="text-sm text-primary hover:underline"
-            >
-              Go to Guest Page
-            </button>
+            <div className="space-y-2">
+              {user?.role === 'trainer' && (
+                <button
+                  onClick={() => router.push('/trainer')}
+                  className="text-sm text-primary hover:underline block w-full"
+                >
+                  Go to Trainer Dashboard
+                </button>
+              )}
+              {user?.role === 'member' && (
+                <button
+                  onClick={() => router.push('/member')}
+                  className="text-sm text-primary hover:underline block w-full"
+                >
+                  Go to Member Dashboard
+                </button>
+              )}
+              <button
+                onClick={() => router.push('/guest')}
+                className="text-sm text-primary hover:underline block w-full"
+              >
+                Go to Guest Page
+              </button>
+            </div>
           </div>
         </div>
       </div>

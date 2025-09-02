@@ -113,6 +113,10 @@ export default function ChangePasswordPage() {
       setTimeout(() => {
         if (user?.role === 'admin') {
           router.push('/admin');
+        } else if (user?.role === 'trainer') {
+          router.push('/trainer');
+        } else if (user?.role === 'member') {
+          router.push('/member');
         } else {
           router.push('/guest');
         }
@@ -170,10 +174,24 @@ export default function ChangePasswordPage() {
                   redirected shortly.
                 </p>
                 <Button asChild>
-                  <Link href={user?.role === 'admin' ? '/admin' : '/guest'}>
+                  <Link
+                    href={
+                      user?.role === 'admin'
+                        ? '/admin'
+                        : user?.role === 'trainer'
+                          ? '/trainer'
+                          : user?.role === 'member'
+                            ? '/member'
+                            : '/guest'
+                    }
+                  >
                     {user?.role === 'admin'
                       ? 'Go to Admin Dashboard'
-                      : 'Go to Guest Page'}
+                      : user?.role === 'trainer'
+                        ? 'Go to Trainer Dashboard'
+                        : user?.role === 'member'
+                          ? 'Go to Member Dashboard'
+                          : 'Go to Guest Page'}
                   </Link>
                 </Button>
               </div>

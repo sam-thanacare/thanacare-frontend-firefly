@@ -145,14 +145,16 @@ export function ModuleAssignmentPanel() {
 
       if (documentsResponse.ok) {
         const documentData = await documentsResponse.json();
+        // Handle the new APIResponse structure with data property
+        const document = documentData.data || documentData;
         setDocuments([
           {
-            id: documentData.id || 'default',
-            title: documentData.title || 'Dementia Values & Priorities Tool',
+            id: document.id || 'default',
+            title: document.title || 'Dementia Values & Priorities Tool',
             description:
-              documentData.description ||
+              document.description ||
               'Comprehensive dementia care planning document',
-            version: documentData.version || '1.0',
+            version: document.version || '1.0',
           },
         ]);
       } else {
@@ -180,8 +182,10 @@ export function ModuleAssignmentPanel() {
 
       if (assignmentsResponse.ok) {
         const assignmentsData = await assignmentsResponse.json();
+        // Handle the new APIResponse structure with data property
+        const assignments = assignmentsData.data || [];
         // Transform the backend data structure to match frontend expectations
-        const transformedAssignments = assignmentsData.map(
+        const transformedAssignments = assignments.map(
           (item: BackendAssignmentResponse) => ({
             id: item.assignment.id,
             document_id: item.assignment.document_id,
@@ -281,7 +285,9 @@ export function ModuleAssignmentPanel() {
           );
 
           if (fullAssignmentResponse.ok) {
-            const allAssignments = await fullAssignmentResponse.json();
+            const allAssignmentsData = await fullAssignmentResponse.json();
+            // Handle the new APIResponse structure with data property
+            const allAssignments = allAssignmentsData.data || [];
             // Find the newly created assignment and transform it
             const newFullAssignment = allAssignments.find(
               (item: BackendAssignmentResponse) =>
@@ -420,8 +426,8 @@ export function ModuleAssignmentPanel() {
     );
   }
 
-  const memberUsers = users.filter((user) => user.role === 'member');
-  const trainerUsers = users.filter((user) => user.role === 'trainer');
+  const memberUsers = users.filter((user) => user.role === 'member') || [];
+  const trainerUsers = users.filter((user) => user.role === 'trainer') || [];
 
   return (
     <div className="space-y-6">
@@ -437,6 +443,29 @@ export function ModuleAssignmentPanel() {
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Show message if no users or documents are available */}
+          {(memberUsers.length === 0 ||
+            trainerUsers.length === 0 ||
+            documents.length === 0) && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-center space-x-2">
+                <AlertCircle className="h-5 w-5 text-yellow-600" />
+                <div>
+                  <h4 className="text-sm font-medium text-yellow-800">
+                    Setup Required
+                  </h4>
+                  <p className="text-sm text-yellow-700 mt-1">
+                    {memberUsers.length === 0 && 'No members available. '}
+                    {trainerUsers.length === 0 && 'No trainers available. '}
+                    {documents.length === 0 && 'No documents available. '}
+                    Please create users and documents before assigning dementia
+                    tool documents.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="member">Member *</Label>
@@ -445,17 +474,23 @@ export function ModuleAssignmentPanel() {
                   <SelectValue placeholder="Select a member" />
                 </SelectTrigger>
                 <SelectContent>
-                  {memberUsers.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      <div className="flex items-center space-x-2">
-                        <User className="h-4 w-4" />
-                        <span>{user.name}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {user.email}
-                        </Badge>
-                      </div>
-                    </SelectItem>
-                  ))}
+                  {memberUsers.length > 0 ? (
+                    memberUsers.map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        <div className="flex items-center space-x-2">
+                          <User className="h-4 w-4" />
+                          <span>{user.name}</span>
+                          <Badge variant="outline" className="text-xs">
+                            {user.email}
+                          </Badge>
+                        </div>
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                      No members available
+                    </div>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -470,17 +505,23 @@ export function ModuleAssignmentPanel() {
                   <SelectValue placeholder="Select a trainer" />
                 </SelectTrigger>
                 <SelectContent>
-                  {trainerUsers.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      <div className="flex items-center space-x-2">
-                        <User className="h-4 w-4" />
-                        <span>{user.name}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {user.email}
-                        </Badge>
-                      </div>
-                    </SelectItem>
-                  ))}
+                  {trainerUsers.length > 0 ? (
+                    trainerUsers.map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        <div className="flex items-center space-x-2">
+                          <User className="h-4 w-4" />
+                          <span>{user.name}</span>
+                          <Badge variant="outline" className="text-xs">
+                            {user.email}
+                          </Badge>
+                        </div>
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                      No trainers available
+                    </div>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -495,17 +536,23 @@ export function ModuleAssignmentPanel() {
                   <SelectValue placeholder="Select a document" />
                 </SelectTrigger>
                 <SelectContent>
-                  {documents.map((doc) => (
-                    <SelectItem key={doc.id} value={doc.id}>
-                      <div className="flex items-center space-x-2">
-                        <FileText className="h-4 w-4" />
-                        <span>{doc.title}</span>
-                        <Badge variant="outline" className="text-xs">
-                          v{doc.version}
-                        </Badge>
-                      </div>
-                    </SelectItem>
-                  ))}
+                  {documents.length > 0 ? (
+                    documents.map((doc) => (
+                      <SelectItem key={doc.id} value={doc.id}>
+                        <div className="flex items-center space-x-2">
+                          <FileText className="h-4 w-4" />
+                          <span>{doc.title}</span>
+                          <Badge variant="outline" className="text-xs">
+                            v{doc.version}
+                          </Badge>
+                        </div>
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                      No documents available
+                    </div>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -542,7 +589,10 @@ export function ModuleAssignmentPanel() {
                 assigning ||
                 !selectedMember ||
                 !selectedDocument ||
-                !selectedTrainer
+                !selectedTrainer ||
+                memberUsers.length === 0 ||
+                trainerUsers.length === 0 ||
+                documents.length === 0
               }
               className="min-w-[150px]"
             >
@@ -550,6 +600,13 @@ export function ModuleAssignmentPanel() {
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Assigning...
+                </>
+              ) : memberUsers.length === 0 ||
+                trainerUsers.length === 0 ||
+                documents.length === 0 ? (
+                <>
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  Setup Required
                 </>
               ) : (
                 <>
