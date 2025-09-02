@@ -19,7 +19,16 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { User, Camera, Save, Edit, X, ArrowLeft, Heart, LogOut } from 'lucide-react';
+import {
+  User,
+  Camera,
+  Save,
+  Edit,
+  X,
+  ArrowLeft,
+  Heart,
+  LogOut,
+} from 'lucide-react';
 
 export default function MemberProfilePage() {
   const router = useRouter();
@@ -227,189 +236,191 @@ export default function MemberProfilePage() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
         <div className="space-y-6">
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Profile Picture Section */}
-          <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Camera className="h-5 w-5" />
-                  Profile Picture
-                </CardTitle>
-                <CardDescription>
-                  Upload a new profile picture for your account
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-center">
-                  <Avatar className="h-24 w-24">
-                    <AvatarImage
-                      src={tempImageUrl || user.profile_picture_url}
-                      alt={user.name}
-                    />
-                    <AvatarFallback className="text-2xl">
-                      {getInitials(user.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-
-                {!tempImageUrl ? (
-                  <div className="space-y-2">
-                    <Label htmlFor="profile-picture" className="cursor-pointer">
-                      <div className="flex items-center justify-center w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer">
-                        <Camera className="h-4 w-4 mr-2" />
-                        Choose Photo
-                      </div>
-                    </Label>
-                    <input
-                      id="profile-picture"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleImageUpload}
-                    />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Profile Picture Section */}
+            <div className="lg:col-span-1">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Camera className="h-5 w-5" />
+                    Profile Picture
+                  </CardTitle>
+                  <CardDescription>
+                    Upload a new profile picture for your account
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-center">
+                    <Avatar className="h-24 w-24">
+                      <AvatarImage
+                        src={tempImageUrl || user.profile_picture_url}
+                        alt={user.name}
+                      />
+                      <AvatarFallback className="text-2xl">
+                        {getInitials(user.name)}
+                      </AvatarFallback>
+                    </Avatar>
                   </div>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        onClick={handleSaveProfilePicture}
-                        disabled={isLoading}
+
+                  {!tempImageUrl ? (
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="profile-picture"
+                        className="cursor-pointer"
                       >
-                        <Save className="h-4 w-4 mr-2" />
-                        Save
-                      </Button>
+                        <div className="flex items-center justify-center w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer">
+                          <Camera className="h-4 w-4 mr-2" />
+                          Choose Photo
+                        </div>
+                      </Label>
+                      <input
+                        id="profile-picture"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleImageUpload}
+                      />
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={handleSaveProfilePicture}
+                          disabled={isLoading}
+                        >
+                          <Save className="h-4 w-4 mr-2" />
+                          Save
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleCancelImageUpload}
+                        >
+                          <X className="h-4 w-4 mr-2" />
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Profile Information Section */}
+            <div className="lg:col-span-2">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <User className="h-5 w-5" />
+                        Profile Information
+                      </CardTitle>
+                      <CardDescription>
+                        Update your personal information and contact details
+                      </CardDescription>
+                    </div>
+                    {!isEditing && (
                       <Button
                         variant="outline"
-                        size="sm"
-                        onClick={handleCancelImageUpload}
+                        onClick={() => setIsEditing(true)}
                       >
-                        <X className="h-4 w-4 mr-2" />
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* User Role Display */}
+                  <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md">
+                    <span className="text-sm font-medium text-gray-700">
+                      Role:
+                    </span>
+                    <Badge variant="secondary">{user.role}</Badge>
+                  </div>
+
+                  <Separator />
+
+                  {/* Editable Fields */}
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="name">Full Name</Label>
+                      {isEditing ? (
+                        <Input
+                          id="name"
+                          value={profileData.name}
+                          onChange={(e) =>
+                            handleInputChange('name', e.target.value)
+                          }
+                          placeholder="Enter your full name"
+                        />
+                      ) : (
+                        <div className="p-3 bg-gray-50 rounded-md">
+                          <span className="text-gray-900">
+                            {profileData.name}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label htmlFor="email">Email Address</Label>
+                      {isEditing ? (
+                        <Input
+                          id="email"
+                          type="email"
+                          value={profileData.email}
+                          onChange={(e) =>
+                            handleInputChange('email', e.target.value)
+                          }
+                          placeholder="Enter your email address"
+                        />
+                      ) : (
+                        <div className="p-3 bg-gray-50 rounded-md">
+                          <span className="text-gray-900">
+                            {profileData.email}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  {isEditing && (
+                    <div className="flex gap-2 pt-4">
+                      <Button onClick={handleSaveProfile} disabled={isLoading}>
+                        <Save className="h-4 w-4 mr-2" />
+                        Save Changes
+                      </Button>
+                      <Button variant="outline" onClick={handleCancelEdit}>
                         Cancel
                       </Button>
                     </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Profile Information Section */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <User className="h-5 w-5" />
-                      Profile Information
-                    </CardTitle>
-                    <CardDescription>
-                      Update your personal information and contact details
-                    </CardDescription>
-                  </div>
-                  {!isEditing && (
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsEditing(true)}
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </Button>
                   )}
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* User Role Display */}
-                <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md">
-                  <span className="text-sm font-medium text-gray-700">
-                    Role:
-                  </span>
-                  <Badge variant="secondary">{user.role}</Badge>
-                </div>
+                </CardContent>
+              </Card>
 
-                <Separator />
-
-                {/* Editable Fields */}
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Full Name</Label>
-                    {isEditing ? (
-                      <Input
-                        id="name"
-                        value={profileData.name}
-                        onChange={(e) =>
-                          handleInputChange('name', e.target.value)
-                        }
-                        placeholder="Enter your full name"
-                      />
-                    ) : (
-                      <div className="p-3 bg-gray-50 rounded-md">
-                        <span className="text-gray-900">
-                          {profileData.name}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="email">Email Address</Label>
-                    {isEditing ? (
-                      <Input
-                        id="email"
-                        type="email"
-                        value={profileData.email}
-                        onChange={(e) =>
-                          handleInputChange('email', e.target.value)
-                        }
-                        placeholder="Enter your email address"
-                      />
-                    ) : (
-                      <div className="p-3 bg-gray-50 rounded-md">
-                        <span className="text-gray-900">
-                          {profileData.email}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                {isEditing && (
-                  <div className="flex gap-2 pt-4">
-                    <Button onClick={handleSaveProfile} disabled={isLoading}>
-                      <Save className="h-4 w-4 mr-2" />
-                      Save Changes
-                    </Button>
-                    <Button variant="outline" onClick={handleCancelEdit}>
-                      Cancel
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Account Security Section */}
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle>Account Security</CardTitle>
-                <CardDescription>
-                  Manage your password and account security settings
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button
-                  variant="outline"
-                  onClick={() => router.push('/change-password')}
-                >
-                  Change Password
-                </Button>
-              </CardContent>
-            </Card>
+              {/* Account Security Section */}
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle>Account Security</CardTitle>
+                  <CardDescription>
+                    Manage your password and account security settings
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button
+                    variant="outline"
+                    onClick={() => router.push('/change-password')}
+                  >
+                    Change Password
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </div>
         </div>
       </main>
     </div>
