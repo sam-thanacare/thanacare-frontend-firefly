@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { logout, updateProfilePicture } from '@/lib/store/slices/authSlice';
 import { isTokenExpiringSoon, getStoredToken } from '@/lib/utils/auth';
@@ -8,15 +8,24 @@ export function useAuth() {
   const { user, token, isAuthenticated, isLoading, error, rememberMe } =
     useAppSelector((state) => state.auth);
 
+  // Add local state to track if the hook has fully initialized
+  const [isInitialized, setIsInitialized] = useState(false);
+
   // Check token expiration and handle refresh
   const checkTokenExpiration = useCallback(() => {
     if (!token) return;
 
-    // Check if token is expiring soon (within 5 minutes)
-    if (isTokenExpiringSoon(token, 5)) {
-      console.log('Token expiring soon, user should re-authenticate');
-      // For now, we'll just log out the user when token expires
-      // In a production app, you might want to implement token refresh
+    try {
+      // Check if token is expiring soon (within 5 minutes)
+      if (isTokenExpiringSoon(token, 5)) {
+        console.log('Token expiring soon, user should re-authenticate');
+        // For now, we'll just log out the user when token expires
+        // In a production app, you might want to implement token refresh
+        dispatch(logout());
+      }
+    } catch (error) {
+      console.error('Error checking token expiration:', error);
+      // If we can't check the token, log out for safety
       dispatch(logout());
     }
   }, [token, dispatch]);
@@ -105,15 +114,24 @@ export function useAuth() {
     }
   }, [isAuthenticated, token, refreshUserProfile]);
 
-  const isAdmin = user?.role === 'admin';
-  const isTrainer = user?.role === 'trainer';
-  const isMember = user?.role === 'member';
+  // Mark the hook as initialized after the first render
+  useEffect(() => {
+    setIsInitialized(true);
+  }, []);
+
+  // Validate user data integrity
+  const isValidUser = user && user.id && user.email && user.role;
+  const isValidAuthState = isAuthenticated && isValidUser && token;
+
+  const isAdmin = isValidUser && user.role === 'admin';
+  const isTrainer = isValidUser && user.role === 'trainer';
+  const isMember = isValidUser && user.role === 'member';
 
   return {
     user,
     token,
-    isAuthenticated,
-    isLoading,
+    isAuthenticated: isValidAuthState,
+    isLoading: isLoading || !isInitialized,
     error,
     rememberMe,
     isAdmin,
@@ -121,5 +139,8 @@ export function useAuth() {
     isMember,
     checkTokenExpiration,
     refreshUserProfile,
+    // Add validation helpers
+    isValidUser,
+    isValidAuthState,
   };
 }

@@ -111,151 +111,230 @@ export interface DementiaProgress {
 
 class DementiaToolService {
   private async getAuthHeaders(): Promise<HeadersInit> {
-    const token = getStoredToken();
-    if (!token) {
-      throw new Error('No authentication token found');
+    try {
+      const token = getStoredToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      return {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      };
+    } catch (error) {
+      console.error('Error getting auth headers:', error);
+      throw new Error('Authentication failed');
     }
-    return {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    };
   }
 
   // Get the default dementia tool document
   async getDefaultDocument() {
-    const response = await fetch(`${BACKEND_URL}/dementia-tool/document`);
-    if (!response.ok) {
+    try {
+      const response = await fetch(`${BACKEND_URL}/dementia-tool/document`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch default document: ${response.status}`);
+      }
+      return response.json();
+    } catch (error) {
+      console.error('Error fetching default document:', error);
       throw new Error('Failed to fetch default document');
     }
-    return response.json();
   }
 
   // Get the document template structure
   async getDocumentTemplate() {
-    const response = await fetch(`${BACKEND_URL}/dementia-tool/template`);
-    if (!response.ok) {
+    try {
+      const response = await fetch(`${BACKEND_URL}/dementia-tool/template`);
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch document template: ${response.status}`
+        );
+      }
+      return response.json();
+    } catch (error) {
+      console.error('Error fetching document template:', error);
       throw new Error('Failed to fetch document template');
     }
-    return response.json();
   }
 
   // Get assignments for the authenticated user
   async getMyAssignments(): Promise<DementiaAssignmentWithDetails[]> {
-    const headers = await this.getAuthHeaders();
-    const response = await fetch(
-      `${BACKEND_URL}/api/dementia-tool/my-assignments`,
-      {
-        headers,
+    try {
+      const headers = await this.getAuthHeaders();
+      const response = await fetch(
+        `${BACKEND_URL}/api/dementia-tool/my-assignments`,
+        {
+          headers,
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to fetch my assignments: ${response.status}`);
       }
-    );
-    if (!response.ok) {
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('Error fetching my assignments:', error);
       throw new Error('Failed to fetch my assignments');
     }
-    return response.json();
   }
 
   // Get progress for the authenticated user
   async getMyProgress(): Promise<DementiaProgress | null> {
-    const headers = await this.getAuthHeaders();
-    const response = await fetch(
-      `${BACKEND_URL}/api/dementia-tool/my-progress`,
-      {
-        headers,
+    try {
+      const headers = await this.getAuthHeaders();
+      const response = await fetch(
+        `${BACKEND_URL}/api/dementia-tool/my-progress`,
+        {
+          headers,
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to fetch my progress: ${response.status}`);
       }
-    );
-    if (!response.ok) {
+      return response.json();
+    } catch (error) {
+      console.error('Error fetching my progress:', error);
       throw new Error('Failed to fetch my progress');
     }
-    return response.json();
   }
 
   // Get assignments by trainer
   async getAssignmentsByTrainer(
     trainerId: string
   ): Promise<DementiaAssignmentWithDetails[]> {
-    const headers = await this.getAuthHeaders();
-    const response = await fetch(
-      `${BACKEND_URL}/api/dementia-tool/assignments/trainer/${trainerId}`,
-      {
-        headers,
+    try {
+      if (!trainerId) {
+        throw new Error('Trainer ID is required');
       }
-    );
-    if (!response.ok) {
+
+      const headers = await this.getAuthHeaders();
+      const response = await fetch(
+        `${BACKEND_URL}/api/dementia-tool/assignments/trainer/${trainerId}`,
+        {
+          headers,
+        }
+      );
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch assignments by trainer: ${response.status}`
+        );
+      }
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('Error fetching assignments by trainer:', error);
       throw new Error('Failed to fetch assignments by trainer');
     }
-    return response.json();
   }
 
   // Get assignments by member
   async getAssignmentsByMember(
     memberId: string
   ): Promise<DementiaAssignmentWithDetails[]> {
-    const headers = await this.getAuthHeaders();
-    const response = await fetch(
-      `${BACKEND_URL}/api/dementia-tool/assignments/member/${memberId}`,
-      {
-        headers,
+    try {
+      if (!memberId) {
+        throw new Error('Member ID is required');
       }
-    );
-    if (!response.ok) {
+
+      const headers = await this.getAuthHeaders();
+      const response = await fetch(
+        `${BACKEND_URL}/api/dementia-tool/assignments/member/${memberId}`,
+        {
+          headers,
+        }
+      );
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch assignments by member: ${response.status}`
+        );
+      }
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('Error fetching assignments by member:', error);
       throw new Error('Failed to fetch assignments by member');
     }
-    return response.json();
   }
 
   // Get specific assignment by ID
   async getAssignmentById(
     assignmentId: string
   ): Promise<DementiaAssignmentWithDetails> {
-    const headers = await this.getAuthHeaders();
-    const response = await fetch(
-      `${BACKEND_URL}/api/dementia-tool/assignments/${assignmentId}`,
-      {
-        headers,
+    try {
+      if (!assignmentId) {
+        throw new Error('Assignment ID is required');
       }
-    );
-    if (!response.ok) {
+
+      const headers = await this.getAuthHeaders();
+      const response = await fetch(
+        `${BACKEND_URL}/api/dementia-tool/assignments/${assignmentId}`,
+        {
+          headers,
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to fetch assignment: ${response.status}`);
+      }
+      return response.json();
+    } catch (error) {
+      console.error('Error fetching assignment:', error);
       throw new Error('Failed to fetch assignment');
     }
-    return response.json();
   }
 
   // Assign document to member (trainers and admins only)
   async assignDocumentToMember(
     assignment: Partial<DementiaAssignment>
   ): Promise<DementiaAssignment> {
-    const headers = await this.getAuthHeaders();
-    const response = await fetch(
-      `${BACKEND_URL}/api/dementia-tool/assignments`,
-      {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(assignment),
+    try {
+      if (!assignment.member_id || !assignment.document_id) {
+        throw new Error('Member ID and Document ID are required');
       }
-    );
-    if (!response.ok) {
+
+      const headers = await this.getAuthHeaders();
+      const response = await fetch(
+        `${BACKEND_URL}/api/dementia-tool/assignments`,
+        {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(assignment),
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to assign document: ${response.status}`);
+      }
+      return response.json();
+    } catch (error) {
+      console.error('Error assigning document:', error);
       throw new Error('Failed to assign document');
     }
-    return response.json();
   }
 
   // Save member response (members only)
   async saveResponse(
     response: Partial<DementiaResponse>
   ): Promise<DementiaResponse> {
-    const headers = await this.getAuthHeaders();
-    const responseData = await fetch(
-      `${BACKEND_URL}/api/dementia-tool/responses`,
-      {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(response),
+    try {
+      if (!response.assignment_id || !response.member_id) {
+        throw new Error('Assignment ID and Member ID are required');
       }
-    );
-    if (!responseData.ok) {
+
+      const headers = await this.getAuthHeaders();
+      const responseData = await fetch(
+        `${BACKEND_URL}/api/dementia-tool/responses`,
+        {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(response),
+        }
+      );
+      if (!responseData.ok) {
+        throw new Error(`Failed to save response: ${responseData.status}`);
+      }
+      return responseData.json();
+    } catch (error) {
+      console.error('Error saving response:', error);
       throw new Error('Failed to save response');
     }
-    return responseData.json();
   }
 
   // Update assignment status (trainers and admins only)
@@ -264,86 +343,136 @@ class DementiaToolService {
     status: string,
     notes?: string
   ): Promise<{ success: boolean; message?: string }> {
-    const headers = await this.getAuthHeaders();
-    const response = await fetch(
-      `${BACKEND_URL}/api/dementia-tool/assignments/${assignmentId}/status`,
-      {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify({ status, notes }),
+    try {
+      if (!assignmentId || !status) {
+        throw new Error('Assignment ID and status are required');
       }
-    );
-    if (!response.ok) {
+
+      const headers = await this.getAuthHeaders();
+      const response = await fetch(
+        `${BACKEND_URL}/api/dementia-tool/assignments/${assignmentId}/status`,
+        {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({ status, notes }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error(
+          `Failed to update assignment status: ${response.status}`
+        );
+      }
+      return response.json();
+    } catch (error) {
+      console.error('Error updating assignment status:', error);
       throw new Error('Failed to update assignment status');
     }
-    return response.json();
   }
 
   // Get progress summary for trainer
   async getProgressSummary(trainerId: string): Promise<DementiaProgress[]> {
-    const headers = await this.getAuthHeaders();
-    const response = await fetch(
-      `${BACKEND_URL}/api/dementia-tool/progress/trainer/${trainerId}`,
-      {
-        headers,
+    try {
+      if (!trainerId) {
+        throw new Error('Trainer ID is required');
       }
-    );
-    if (!response.ok) {
+
+      const headers = await this.getAuthHeaders();
+      const response = await fetch(
+        `${BACKEND_URL}/api/dementia-tool/progress/trainer/${trainerId}`,
+        {
+          headers,
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to fetch progress summary: ${response.status}`);
+      }
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('Error fetching progress summary:', error);
       throw new Error('Failed to fetch progress summary');
     }
-    return response.json();
   }
 
   // Generate PDF for completed assignment
   async generatePDF(assignmentId: string): Promise<Blob> {
-    const headers = await this.getAuthHeaders();
-    // Remove Content-Type for binary response
-    const headersWithoutContentType = {
-      Authorization: (headers as Record<string, string>).Authorization,
-    };
-
-    const response = await fetch(
-      `${BACKEND_URL}/api/dementia-tool/pdf/assignment/${assignmentId}`,
-      {
-        headers: headersWithoutContentType,
+    try {
+      if (!assignmentId) {
+        throw new Error('Assignment ID is required');
       }
-    );
-    if (!response.ok) {
+
+      const headers = await this.getAuthHeaders();
+      // Remove Content-Type for binary response
+      const headersWithoutContentType = {
+        Authorization: (headers as Record<string, string>).Authorization,
+      };
+
+      const response = await fetch(
+        `${BACKEND_URL}/api/dementia-tool/pdf/assignment/${assignmentId}`,
+        {
+          headers: headersWithoutContentType,
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to generate PDF: ${response.status}`);
+      }
+      return response.blob();
+    } catch (error) {
+      console.error('Error generating PDF:', error);
       throw new Error('Failed to generate PDF');
     }
-    return response.blob();
   }
 
   // Generate PDF report of assignments for trainer
   async generateAssignmentsPDF(trainerId: string): Promise<Blob> {
-    const headers = await this.getAuthHeaders();
-    // Remove Content-Type for binary response
-    const headersWithoutContentType = {
-      Authorization: (headers as Record<string, string>).Authorization,
-    };
-
-    const response = await fetch(
-      `${BACKEND_URL}/api/dementia-tool/pdf/assignments/trainer/${trainerId}`,
-      {
-        headers: headersWithoutContentType,
+    try {
+      if (!trainerId) {
+        throw new Error('Trainer ID is required');
       }
-    );
-    if (!response.ok) {
+
+      const headers = await this.getAuthHeaders();
+      // Remove Content-Type for binary response
+      const headersWithoutContentType = {
+        Authorization: (headers as Record<string, string>).Authorization,
+      };
+
+      const response = await fetch(
+        `${BACKEND_URL}/api/dementia-tool/pdf/assignments/trainer/${trainerId}`,
+        {
+          headers: headersWithoutContentType,
+        }
+      );
+      if (!response.ok) {
+        throw new Error(
+          `Failed to generate assignments PDF: ${response.status}`
+        );
+      }
+      return response.blob();
+    } catch (error) {
+      console.error('Error generating assignments PDF:', error);
       throw new Error('Failed to generate assignments PDF');
     }
-    return response.blob();
   }
 
   // Download PDF
   downloadPDF(blob: Blob, filename: string) {
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    try {
+      if (!blob || !filename) {
+        throw new Error('Blob and filename are required');
+      }
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      throw new Error('Failed to download PDF');
+    }
   }
 }
 

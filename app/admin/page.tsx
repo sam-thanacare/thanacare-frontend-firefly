@@ -18,12 +18,14 @@ import {
   Activity,
   Building2,
   Camera,
+  FileText,
 } from 'lucide-react';
 import { UsersTable } from '@/components/admin/UsersTable';
 import { LoginRecordsTable } from '@/components/admin/LoginRecordsTable';
 import { PasswordResetPanel } from '@/components/admin/PasswordResetPanel';
 import { OrganizationsTable } from '@/components/admin/OrganizationsTable';
 import { ProfilePictureUpload } from '@/components/admin/ProfilePictureUpload';
+import { ModuleAssignmentPanel } from '@/components/admin/ModuleAssignmentPanel';
 import { useAuth } from '@/lib/hooks/useAuth';
 
 interface LoginRecord {
@@ -307,7 +309,7 @@ export default function AdminDashboard() {
               }}
               className="space-y-6"
             >
-              <TabsList className="grid w-full grid-cols-5 lg:w-[600px]">
+              <TabsList className="grid w-full grid-cols-6 lg:w-[700px]">
                 <TabsTrigger
                   value="users"
                   className="flex items-center space-x-2"
@@ -321,6 +323,13 @@ export default function AdminDashboard() {
                 >
                   <Building2 className="h-4 w-4" />
                   <span className="hidden sm:inline">Orgs</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="module-assignments"
+                  className="flex items-center space-x-2"
+                >
+                  <FileText className="h-4 w-4" />
+                  <span className="hidden sm:inline">Modules</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="login-records"
@@ -377,6 +386,10 @@ export default function AdminDashboard() {
                     <OrganizationsTable />
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              <TabsContent value="module-assignments" className="space-y-6">
+                <ModuleAssignmentPanel />
               </TabsContent>
 
               <TabsContent value="login-records" className="space-y-6">

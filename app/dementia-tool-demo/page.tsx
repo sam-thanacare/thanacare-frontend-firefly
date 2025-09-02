@@ -21,7 +21,7 @@ import DementiaValuesForm from '@/components/dementia-tool/DementiaValuesForm';
 import { toast } from 'sonner';
 
 export default function DementiaToolDemoPage() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [assignments, setAssignments] = useState<
     DementiaAssignmentWithDetails[]
   >([]);
@@ -35,14 +35,26 @@ export default function DementiaToolDemoPage() {
       setIsLoading(true);
       setError(null);
 
-      if (user?.role === 'trainer' || user?.role === 'admin') {
+      // Add additional safety checks
+      if (!user?.id || !user?.role) {
+        console.warn('User data incomplete:', user);
+        setError(
+          'User authentication data is incomplete. Please log in again.'
+        );
+        return;
+      }
+
+      if (user.role === 'trainer' || user.role === 'admin') {
         // For trainers/admins, get assignments they created
         const data = await dementiaToolService.getAssignmentsByTrainer(user.id);
         setAssignments(data);
-      } else if (user?.role === 'member') {
+      } else if (user.role === 'member') {
         // For members, get their assignments
         const data = await dementiaToolService.getAssignmentsByMember(user.id);
         setAssignments(data);
+      } else {
+        console.warn('Unknown user role:', user.role);
+        setError('Unknown user role. Please contact support.');
       }
     } catch (err) {
       console.error('Failed to load assignments:', err);
@@ -50,15 +62,91 @@ export default function DementiaToolDemoPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.role, user?.id]);
+  }, [user]);
 
   useEffect(() => {
+    // Wait for authentication to be fully loaded
+    if (authLoading) {
+      return;
+    }
+
     if (isAuthenticated && user) {
       loadAssignments();
     } else {
       setIsLoading(false);
     }
-  }, [isAuthenticated, user, loadAssignments]);
+  }, [isAuthenticated, user, authLoading, loadAssignments]);
+
+  // Add safety check for user data
+  if (authLoading) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-center py-8">
+              <Clock className="h-6 w-6 animate-spin mr-2" />
+              Loading authentication...
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !user) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-orange-500" />
+              Authentication Required
+            </CardTitle>
+            <CardDescription>
+              Please log in to access the Dementia Values & Priorities Tool
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              This tool requires authentication to ensure your responses are
+              securely saved and associated with your account.
+            </p>
+            <Button asChild>
+              <a href="/login">Log In</a>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Add safety check for user role
+  if (!user.role || !['admin', 'trainer', 'member'].includes(user.role)) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-red-500" />
+              Access Denied
+            </CardTitle>
+            <CardDescription>
+              You don&apos;t have permission to access this tool
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              Your user account doesn&apos;t have the required role to access
+              the Dementia Values & Priorities Tool.
+            </p>
+            <Button asChild>
+              <a href="/admin">Return to Dashboard</a>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const handleAssignmentSelect = (
     assignment: DementiaAssignmentWithDetails
@@ -128,33 +216,6 @@ export default function DementiaToolDemoPage() {
     if (progress >= 50) return 'text-yellow-600';
     return 'text-red-600';
   };
-
-  if (!isAuthenticated) {
-    return (
-      <div className="max-w-4xl mx-auto p-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-orange-500" />
-              Authentication Required
-            </CardTitle>
-            <CardDescription>
-              Please log in to access the Dementia Values & Priorities Tool
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground mb-4">
-              This tool requires authentication to ensure your responses are
-              securely saved and associated with your account.
-            </p>
-            <Button asChild>
-              <a href="/login">Log In</a>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   if (selectedAssignment) {
     return (
