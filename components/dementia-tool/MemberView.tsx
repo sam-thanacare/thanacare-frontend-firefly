@@ -45,7 +45,9 @@ export default function MemberView() {
         setIsLoading(true);
         const backendUrl =
           process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
-        const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        const token =
+          localStorage.getItem('authToken') ||
+          sessionStorage.getItem('authToken');
 
         if (!token) {
           console.error('No authentication token found');
@@ -54,11 +56,14 @@ export default function MemberView() {
           return;
         }
 
-        const response = await fetch(`${backendUrl}/api/dementia-tool/assignments/member`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await fetch(
+          `${backendUrl}/api/dementia-tool/assignments/member`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (response.ok) {
           const data = await response.json();

@@ -67,17 +67,18 @@ export default function TrainerDashboard() {
         process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
 
       // Fetch real data from API
-      const [familiesResponse, membersResponse, assignmentsResponse] = await Promise.all([
-        fetch(`${backendUrl}/api/families`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch(`${backendUrl}/api/families/members`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch(`${backendUrl}/api/dementia-tool/assignments`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
+      const [familiesResponse, membersResponse, assignmentsResponse] =
+        await Promise.all([
+          fetch(`${backendUrl}/api/families`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch(`${backendUrl}/api/families/members`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch(`${backendUrl}/api/dementia-tool/assignments`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
 
       let totalFamilies = 0;
       let totalMembers = 0;
@@ -100,9 +101,15 @@ export default function TrainerDashboard() {
         const assignmentsData = await assignmentsResponse.json();
         const assignments = assignmentsData.data || [];
         totalAssignments = assignments.length;
-        completedAssignments = assignments.filter((a: { status: string }) => a.status === 'completed').length;
-        inProgressAssignments = assignments.filter((a: { status: string }) => a.status === 'in_progress').length;
-        pendingAssignments = assignments.filter((a: { status: string }) => a.status === 'pending').length;
+        completedAssignments = assignments.filter(
+          (a: { status: string }) => a.status === 'completed'
+        ).length;
+        inProgressAssignments = assignments.filter(
+          (a: { status: string }) => a.status === 'in_progress'
+        ).length;
+        pendingAssignments = assignments.filter(
+          (a: { status: string }) => a.status === 'pending'
+        ).length;
       }
 
       setStats({

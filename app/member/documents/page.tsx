@@ -67,11 +67,14 @@ export default function MemberDocumentsPage() {
         const backendUrl =
           process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
 
-        const response = await fetch(`${backendUrl}/api/dementia-tool/assignments/member`, {
-          headers: {
-            Authorization: `Bearer ${currentToken}`,
-          },
-        });
+        const response = await fetch(
+          `${backendUrl}/api/dementia-tool/assignments/member`,
+          {
+            headers: {
+              Authorization: `Bearer ${currentToken}`,
+            },
+          }
+        );
 
         if (response.ok) {
           const data = await response.json();

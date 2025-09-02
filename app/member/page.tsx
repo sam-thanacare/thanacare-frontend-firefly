@@ -106,24 +106,37 @@ export default function MemberDashboard() {
         process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
 
       // Fetch real data from API
-      const response = await fetch(`${backendUrl}/api/dementia-tool/assignments/member`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${backendUrl}/api/dementia-tool/assignments/member`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
         const assignments = data.data || [];
-        
+
         const totalDocuments = assignments.length;
-        const completedDocuments = assignments.filter((a: { status: string }) => a.status === 'completed').length;
-        const inProgressDocuments = assignments.filter((a: { status: string }) => a.status === 'in_progress').length;
-        const assignedDocuments = assignments.filter((a: { status: string }) => a.status === 'assigned').length;
-        
+        const completedDocuments = assignments.filter(
+          (a: { status: string }) => a.status === 'completed'
+        ).length;
+        const inProgressDocuments = assignments.filter(
+          (a: { status: string }) => a.status === 'in_progress'
+        ).length;
+        const assignedDocuments = assignments.filter(
+          (a: { status: string }) => a.status === 'assigned'
+        ).length;
+
         // Calculate overall progress
-        const totalProgress = assignments.reduce((sum: number, a: { progress?: number }) => sum + (a.progress || 0), 0);
-        const overallProgress = totalDocuments > 0 ? Math.round(totalProgress / totalDocuments) : 0;
+        const totalProgress = assignments.reduce(
+          (sum: number, a: { progress?: number }) => sum + (a.progress || 0),
+          0
+        );
+        const overallProgress =
+          totalDocuments > 0 ? Math.round(totalProgress / totalDocuments) : 0;
 
         setStats({
           totalDocuments,
