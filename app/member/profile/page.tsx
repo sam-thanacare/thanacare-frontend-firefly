@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppSelector, useAppDispatch } from '@/lib/store/hooks';
-import { updateProfilePicture } from '@/lib/store/slices/authSlice';
-import { MemberLayout } from '@/components/member/MemberLayout';
+import { updateProfilePicture, logout } from '@/lib/store/slices/authSlice';
+
 import {
   Card,
   CardContent,
@@ -19,7 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { User, Camera, Save, Edit, X } from 'lucide-react';
+import { User, Camera, Save, Edit, X, ArrowLeft, Heart, LogOut } from 'lucide-react';
 
 export default function MemberProfilePage() {
   const router = useRouter();
@@ -160,20 +160,73 @@ export default function MemberProfilePage() {
     return null;
   }
 
+  const handleLogout = () => {
+    dispatch(logout());
+    router.push('/login');
+  };
+
   return (
-    <MemberLayout>
-      <div className="space-y-6">
-        {/* Page Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Profile Settings
-            </h1>
-            <p className="text-gray-600">
-              Manage your account information and preferences
-            </p>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex h-14 items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push('/member')}
+                className="flex items-center space-x-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Back to Dashboard</span>
+              </Button>
+              <div className="flex items-center space-x-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                  <Heart className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-semibold">Profile Settings</h1>
+                  <p className="text-xs text-muted-foreground">
+                    Manage your account information
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Badge
+                variant="secondary"
+                className="hidden sm:flex items-center space-x-1 px-2 py-1"
+              >
+                <Heart className="h-3 w-3" />
+                <span className="text-xs font-medium">Family Member</span>
+              </Badge>
+              <div className="flex items-center space-x-3">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage
+                    src={user?.profile_picture_url || undefined}
+                    alt={user?.name || 'Profile'}
+                  />
+                  <AvatarFallback className="text-sm">
+                    {user?.name?.charAt(0)?.toUpperCase() || 'M'}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm font-medium hidden sm:block">
+                  {user?.name}
+                </span>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleLogout}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-6">
+        <div className="space-y-6">
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Profile Picture Section */}
@@ -357,7 +410,8 @@ export default function MemberProfilePage() {
             </Card>
           </div>
         </div>
-      </div>
-    </MemberLayout>
+        </div>
+      </main>
+    </div>
   );
 }
