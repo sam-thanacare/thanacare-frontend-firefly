@@ -102,19 +102,56 @@ export default function MemberDashboard() {
 
     try {
       setStatsLoading(true);
-      // const backendUrl =
-      //   process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
+      const backendUrl =
+        process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
 
-      // Mock data for now - in real implementation, these would be API calls
-      setStats({
-        totalDocuments: 3,
-        completedDocuments: 1,
-        inProgressDocuments: 1,
-        assignedDocuments: 1,
-        overallProgress: 67,
+      // Fetch real data from API
+      const response = await fetch(`${backendUrl}/api/dementia-tool/assignments/member`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
+
+      if (response.ok) {
+        const data = await response.json();
+        const assignments = data.data || [];
+        
+        const totalDocuments = assignments.length;
+        const completedDocuments = assignments.filter((a: { status: string }) => a.status === 'completed').length;
+        const inProgressDocuments = assignments.filter((a: { status: string }) => a.status === 'in_progress').length;
+        const assignedDocuments = assignments.filter((a: { status: string }) => a.status === 'assigned').length;
+        
+        // Calculate overall progress
+        const totalProgress = assignments.reduce((sum: number, a: { progress?: number }) => sum + (a.progress || 0), 0);
+        const overallProgress = totalDocuments > 0 ? Math.round(totalProgress / totalDocuments) : 0;
+
+        setStats({
+          totalDocuments,
+          completedDocuments,
+          inProgressDocuments,
+          assignedDocuments,
+          overallProgress,
+        });
+      } else {
+        // Set to 0 on error instead of showing dummy data
+        setStats({
+          totalDocuments: 0,
+          completedDocuments: 0,
+          inProgressDocuments: 0,
+          assignedDocuments: 0,
+          overallProgress: 0,
+        });
+      }
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
+      // Set to 0 on error instead of showing dummy data
+      setStats({
+        totalDocuments: 0,
+        completedDocuments: 0,
+        inProgressDocuments: 0,
+        assignedDocuments: 0,
+        overallProgress: 0,
+      });
     } finally {
       setStatsLoading(false);
     }
@@ -432,7 +469,7 @@ export default function MemberDashboard() {
                       Detailed progress tracking and analytics will be available
                       here
                     </p>
-                    <Button onClick={() => router.push('/dementia-tool-demo')}>
+                    <Button onClick={() => router.push('/member/documents')}>
                       <TrendingUp className="h-4 w-4 mr-2" />
                       View Progress Details
                     </Button>

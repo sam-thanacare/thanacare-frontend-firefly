@@ -51,52 +51,96 @@ export function MemberDashboard() {
     overallProgress: 0,
   });
 
-  // Mock data for demonstration - in real app, this would come from API
+  // Load real assignments from API
   useEffect(() => {
-    const mockAssignments: Assignment[] = [
-      {
-        id: '1',
-        documentTitle: 'Dementia Values & Priorities Tool',
-        status: 'completed',
-        progress: 100,
-        assignedAt: '2024-01-10T10:00:00Z',
-        dueDate: '2024-01-15T10:00:00Z',
-        notes:
-          'Please complete this important document to help guide your future care decisions.',
-        trainerName: 'Dr. Sarah Wilson',
-      },
-      {
-        id: '2',
-        documentTitle: 'Dementia Values & Priorities Tool - Updated',
-        status: 'in_progress',
-        progress: 60,
-        assignedAt: '2024-01-12T10:00:00Z',
-        dueDate: '2024-01-20T10:00:00Z',
-        notes:
-          'Updated version with additional questions about end-of-life preferences.',
-        trainerName: 'Dr. Sarah Wilson',
-      },
-    ];
+    const loadAssignments = async () => {
+      if (!user?.id) return;
 
-    setAssignments(mockAssignments);
+      try {
+        setIsLoading(true);
+        const response = await fetch(
+          `/api/dementia-tool/assignments/member/${user.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
 
-    // Calculate stats
-    const total = mockAssignments.length;
-    const completed = mockAssignments.filter(
-      (a) => a.status === 'completed'
-    ).length;
-    const inProgress = mockAssignments.filter(
-      (a) => a.status === 'in_progress'
-    ).length;
-    const assigned = mockAssignments.filter(
-      (a) => a.status === 'assigned'
-    ).length;
-    const overallProgress =
-      total > 0 ? Math.round((completed / total) * 100) : 0;
+        if (!response.ok) {
+          throw new Error('Failed to load assignments');
+        }
 
-    setStats({ total, completed, inProgress, assigned, overallProgress });
-    setIsLoading(false);
-  }, []);
+        const data = await response.json();
+        const assignmentsData = data.data || data;
+
+        // Transform API data to component format
+        const transformedAssignments: Assignment[] = assignmentsData.map(
+          (assignment: {
+            assignment: {
+              id: string;
+              status: string;
+              assigned_at: string;
+              due_date?: string;
+              notes?: string;
+            };
+            document: {
+              title: string;
+            };
+            response?: {
+              progress: number;
+            };
+            trainer: {
+              name: string;
+            };
+          }) => ({
+            id: assignment.assignment.id,
+            documentTitle: assignment.document.title,
+            status: assignment.assignment.status,
+            progress: assignment.response?.progress || 0,
+            assignedAt: assignment.assignment.assigned_at,
+            dueDate: assignment.assignment.due_date,
+            notes: assignment.assignment.notes,
+            trainerName: assignment.trainer.name,
+          })
+        );
+
+        setAssignments(transformedAssignments);
+
+        // Calculate stats
+        const total = transformedAssignments.length;
+        const completed = transformedAssignments.filter(
+          (a) => a.status === 'completed'
+        ).length;
+        const inProgress = transformedAssignments.filter(
+          (a) => a.status === 'in_progress'
+        ).length;
+        const assigned = transformedAssignments.filter(
+          (a) => a.status === 'assigned'
+        ).length;
+        const overallProgress =
+          total > 0 ? Math.round((completed / total) * 100) : 0;
+
+        setStats({ total, completed, inProgress, assigned, overallProgress });
+      } catch (error) {
+        console.error('Error loading assignments:', error);
+        // Set empty state on error
+        setAssignments([]);
+        setStats({
+          total: 0,
+          completed: 0,
+          inProgress: 0,
+          assigned: 0,
+          overallProgress: 0,
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadAssignments();
+  }, [user?.id]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -269,7 +313,9 @@ export function MemberDashboard() {
                     ) : (
                       <Button
                         size="sm"
-                        onClick={() => router.push('/dementia-tool-demo')}
+                        onClick={() =>
+                          router.push(`/member/documents/${assignment.id}`)
+                        }
                       >
                         {assignment.status === 'assigned' ? (
                           <>

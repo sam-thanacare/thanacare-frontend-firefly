@@ -46,7 +46,7 @@ interface Assignment {
 export default function MemberDocumentsPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { user } = useAppSelector((state) => state.auth);
+  const { user, token } = useAppSelector((state) => state.auth);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [filteredAssignments, setFilteredAssignments] = useState<Assignment[]>(
     []
@@ -56,51 +56,44 @@ export default function MemberDocumentsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('assignedAt');
 
-  // Mock data for demonstration - in real app, this would come from API
+  // Fetch assignments from API
   useEffect(() => {
-    const mockAssignments: Assignment[] = [
-      {
-        id: '1',
-        documentTitle: 'Dementia Values & Priorities Tool',
-        status: 'completed',
-        progress: 100,
-        assignedAt: '2024-01-10T10:00:00Z',
-        dueDate: '2024-01-15T10:00:00Z',
-        notes:
-          'Please complete this important document to help guide your future care decisions.',
-        trainerName: 'Dr. Sarah Wilson',
-        familyName: 'Wilson Family',
-      },
-      {
-        id: '2',
-        documentTitle: 'Dementia Values & Priorities Tool - Updated',
-        status: 'in_progress',
-        progress: 60,
-        assignedAt: '2024-01-12T10:00:00Z',
-        dueDate: '2024-01-20T10:00:00Z',
-        notes:
-          'Updated version with additional questions about end-of-life preferences.',
-        trainerName: 'Dr. Sarah Wilson',
-        familyName: 'Wilson Family',
-      },
-      {
-        id: '3',
-        documentTitle: 'Advanced Care Planning Document',
-        status: 'assigned',
-        progress: 0,
-        assignedAt: '2024-01-15T10:00:00Z',
-        dueDate: '2024-01-25T10:00:00Z',
-        notes:
-          'Comprehensive care planning document covering medical decisions and preferences.',
-        trainerName: 'Dr. Michael Chen',
-        familyName: 'Wilson Family',
-      },
-    ];
+    const fetchAssignments = async () => {
+      const currentToken = token;
+      if (!currentToken) return;
 
-    setAssignments(mockAssignments);
-    setFilteredAssignments(mockAssignments);
-    setIsLoading(false);
-  }, []);
+      try {
+        setIsLoading(true);
+        const backendUrl =
+          process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
+
+        const response = await fetch(`${backendUrl}/api/dementia-tool/assignments/member`, {
+          headers: {
+            Authorization: `Bearer ${currentToken}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const assignmentsData: Assignment[] = data.data || [];
+          setAssignments(assignmentsData);
+          setFilteredAssignments(assignmentsData);
+        } else {
+          console.error('Failed to fetch assignments');
+          setAssignments([]);
+          setFilteredAssignments([]);
+        }
+      } catch (error) {
+        console.error('Error fetching assignments:', error);
+        setAssignments([]);
+        setFilteredAssignments([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAssignments();
+  }, [token]);
 
   // Filter and sort assignments
   useEffect(() => {
@@ -462,7 +455,9 @@ export default function MemberDocumentsPage() {
                         ) : (
                           <Button
                             size="sm"
-                            onClick={() => router.push('/dementia-tool-demo')}
+                            onClick={() =>
+                              router.push(`/member/documents/${assignment.id}`)
+                            }
                           >
                             {assignment.status === 'assigned' ? (
                               <>

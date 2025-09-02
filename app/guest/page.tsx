@@ -59,11 +59,11 @@ export default function GuestPage() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <Image
-                src="/CC-logo-notag.jpg"
+                src="/compassionate_choices.png"
                 alt="Compassion & Choices"
-                className="h-10 w-auto"
-                width={40}
-                height={40}
+                className="h-12 w-auto object-contain"
+                width={150}
+                height={48}
                 priority
               />
               <span className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -251,11 +251,11 @@ export default function GuestPage() {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-4 mb-4 md:mb-0">
               <Image
-                src="/CC-logo-notag.jpg"
+                src="/compassionate_choices.png"
                 alt="Compassion & Choices"
-                className="h-8 w-auto"
-                width={32}
-                height={32}
+                className="h-10 w-auto object-contain"
+                width={120}
+                height={40}
               />
               <span className="text-lg font-semibold">Thanacare</span>
             </div>

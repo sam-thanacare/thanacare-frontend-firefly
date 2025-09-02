@@ -63,26 +63,67 @@ export default function TrainerDashboard() {
 
     try {
       setStatsLoading(true);
-      // const backendUrl =
-      //   process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
+      const backendUrl =
+        process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
 
-      // Mock data for now - in real implementation, these would be API calls
-      // Fetch families count
-      setStats((prev) => ({ ...prev, totalFamilies: 12 }));
+      // Fetch real data from API
+      const [familiesResponse, membersResponse, assignmentsResponse] = await Promise.all([
+        fetch(`${backendUrl}/api/families`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch(`${backendUrl}/api/families/members`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch(`${backendUrl}/api/dementia-tool/assignments`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
 
-      // Fetch members count
-      setStats((prev) => ({ ...prev, totalMembers: 45 }));
+      let totalFamilies = 0;
+      let totalMembers = 0;
+      let totalAssignments = 0;
+      let completedAssignments = 0;
+      let inProgressAssignments = 0;
+      let pendingAssignments = 0;
 
-      // Fetch assignments count
-      setStats((prev) => ({
-        ...prev,
-        totalAssignments: 28,
-        completedAssignments: 15,
-        inProgressAssignments: 8,
-        pendingAssignments: 5,
-      }));
+      if (familiesResponse.ok) {
+        const familiesData = await familiesResponse.json();
+        totalFamilies = familiesData.data?.length || 0;
+      }
+
+      if (membersResponse.ok) {
+        const membersData = await membersResponse.json();
+        totalMembers = membersData.data?.length || 0;
+      }
+
+      if (assignmentsResponse.ok) {
+        const assignmentsData = await assignmentsResponse.json();
+        const assignments = assignmentsData.data || [];
+        totalAssignments = assignments.length;
+        completedAssignments = assignments.filter((a: { status: string }) => a.status === 'completed').length;
+        inProgressAssignments = assignments.filter((a: { status: string }) => a.status === 'in_progress').length;
+        pendingAssignments = assignments.filter((a: { status: string }) => a.status === 'pending').length;
+      }
+
+      setStats({
+        totalFamilies,
+        totalMembers,
+        totalAssignments,
+        completedAssignments,
+        inProgressAssignments,
+        pendingAssignments,
+      });
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
+      // Set to 0 on error instead of showing dummy data
+      setStats({
+        totalFamilies: 0,
+        totalMembers: 0,
+        totalAssignments: 0,
+        completedAssignments: 0,
+        inProgressAssignments: 0,
+        pendingAssignments: 0,
+      });
     } finally {
       setStatsLoading(false);
     }
@@ -361,9 +402,7 @@ export default function TrainerDashboard() {
                           Detailed assignment management features will be
                           available here
                         </p>
-                        <Button
-                          onClick={() => router.push('/dementia-tool-demo')}
-                        >
+                        <Button onClick={() => setActiveTab('tools')}>
                           <FileText className="h-4 w-4 mr-2" />
                           Manage Assignments
                         </Button>
@@ -394,9 +433,7 @@ export default function TrainerDashboard() {
                         Detailed progress tracking and analytics will be
                         available here
                       </p>
-                      <Button
-                        onClick={() => router.push('/trainer-dashboard-demo')}
-                      >
+                      <Button onClick={() => setActiveTab('assignments')}>
                         <TrendingUp className="h-4 w-4 mr-2" />
                         View Progress Dashboard
                       </Button>
@@ -421,7 +458,7 @@ export default function TrainerDashboard() {
                       <Button
                         variant="outline"
                         className="h-20 flex-col gap-2"
-                        onClick={() => router.push('/dementia-tool-demo')}
+                        onClick={() => setActiveTab('assignments')}
                       >
                         <FileText className="h-6 w-6" />
                         Dementia Values Tool
@@ -429,7 +466,7 @@ export default function TrainerDashboard() {
                       <Button
                         variant="outline"
                         className="h-20 flex-col gap-2"
-                        onClick={() => router.push('/trainer-dashboard-demo')}
+                        onClick={() => setActiveTab('progress')}
                       >
                         <Users className="h-6 w-6" />
                         Member Progress View

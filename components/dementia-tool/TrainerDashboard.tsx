@@ -71,101 +71,113 @@ export default function TrainerDashboard() {
   const [dueDate, setDueDate] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
 
-  // Mock data for demonstration
+  // Load real data from API
   useEffect(() => {
-    const mockMemberProgress: MemberProgress[] = [
-      {
-        memberId: '1',
-        memberName: 'John Smith',
-        familyName: 'Smith Family',
-        totalAssignments: 3,
-        completedAssignments: 2,
-        inProgressAssignments: 1,
-        overallProgress: 75,
-        lastActivity: '2024-01-15T10:30:00Z',
-      },
-      {
-        memberId: '2',
-        memberName: 'Mary Johnson',
-        familyName: 'Johnson Family',
-        totalAssignments: 2,
-        completedAssignments: 1,
-        inProgressAssignments: 1,
-        overallProgress: 50,
-        lastActivity: '2024-01-14T14:20:00Z',
-      },
-      {
-        memberId: '3',
-        memberName: 'Robert Davis',
-        familyName: 'Davis Family',
-        totalAssignments: 1,
-        completedAssignments: 0,
-        inProgressAssignments: 1,
-        overallProgress: 25,
-        lastActivity: '2024-01-13T09:15:00Z',
-      },
-    ];
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
 
-    const mockAssignments: Assignment[] = [
-      {
-        id: '1',
-        memberName: 'John Smith',
-        familyName: 'Smith Family',
-        status: 'completed',
-        progress: 100,
-        assignedAt: '2024-01-10T10:00:00Z',
-        dueDate: '2024-01-15T10:00:00Z',
-      },
-      {
-        id: '2',
-        memberName: 'John Smith',
-        familyName: 'Smith Family',
-        status: 'completed',
-        progress: 100,
-        assignedAt: '2024-01-05T10:00:00Z',
-        dueDate: '2024-01-12T10:00:00Z',
-      },
-      {
-        id: '3',
-        memberName: 'John Smith',
-        familyName: 'Smith Family',
-        status: 'in_progress',
-        progress: 60,
-        assignedAt: '2024-01-12T10:00:00Z',
-        dueDate: '2024-01-20T10:00:00Z',
-      },
-      {
-        id: '4',
-        memberName: 'Mary Johnson',
-        familyName: 'Johnson Family',
-        status: 'completed',
-        progress: 100,
-        assignedAt: '2024-01-08T10:00:00Z',
-        dueDate: '2024-01-15T10:00:00Z',
-      },
-      {
-        id: '5',
-        memberName: 'Mary Johnson',
-        familyName: 'Johnson Family',
-        status: 'in_progress',
-        progress: 40,
-        assignedAt: '2024-01-13T10:00:00Z',
-        dueDate: '2024-01-22T10:00:00Z',
-      },
-      {
-        id: '6',
-        memberName: 'Robert Davis',
-        familyName: 'Davis Family',
-        status: 'in_progress',
-        progress: 25,
-        assignedAt: '2024-01-14T10:00:00Z',
-        dueDate: '2024-01-25T10:00:00Z',
-      },
-    ];
+        // Get trainer ID from auth context or props
+        const trainerId = 'current-trainer-id'; // This should come from auth context
 
-    setMemberProgress(mockMemberProgress);
-    setAssignments(mockAssignments);
-    setIsLoading(false);
+        // Load progress summary
+        const progressResponse = await fetch(
+          `/api/dementia-tool/progress/trainer/${trainerId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (progressResponse.ok) {
+          const progressData = await progressResponse.json();
+          const progressList = progressData.data || progressData;
+
+          const transformedProgress: MemberProgress[] = progressList.map(
+            (p: {
+              member_id: string;
+              member_name: string;
+              family_name: string;
+              total_assignments: number;
+              completed_assignments: number;
+              in_progress_assignments: number;
+              overall_progress: number;
+              last_activity?: string;
+            }) => ({
+              memberId: p.member_id,
+              memberName: p.member_name,
+              familyName: p.family_name,
+              totalAssignments: p.total_assignments,
+              completedAssignments: p.completed_assignments,
+              inProgressAssignments: p.in_progress_assignments,
+              overallProgress: Math.round(p.overall_progress),
+              lastActivity: p.last_activity,
+            })
+          );
+
+          setMemberProgress(transformedProgress);
+        }
+
+        // Load assignments
+        const assignmentsResponse = await fetch(
+          `/api/dementia-tool/assignments/trainer/${trainerId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (assignmentsResponse.ok) {
+          const assignmentsData = await assignmentsResponse.json();
+          const assignmentsList = assignmentsData.data || assignmentsData;
+
+          const transformedAssignments: Assignment[] = assignmentsList.map(
+            (assignment: {
+              assignment: {
+                id: string;
+                status: string;
+                assigned_at: string;
+                due_date?: string;
+                notes?: string;
+              };
+              member: {
+                name: string;
+              };
+              family: {
+                name: string;
+              };
+              response?: {
+                progress: number;
+              };
+            }) => ({
+              id: assignment.assignment.id,
+              memberName: assignment.member.name,
+              familyName: assignment.family.name,
+              status: assignment.assignment.status,
+              progress: assignment.response?.progress || 0,
+              assignedAt: assignment.assignment.assigned_at,
+              dueDate: assignment.assignment.due_date,
+              notes: assignment.assignment.notes,
+            })
+          );
+
+          setAssignments(transformedAssignments);
+        }
+      } catch (error) {
+        console.error('Error loading trainer dashboard data:', error);
+        // Set empty state on error
+        setMemberProgress([]);
+        setAssignments([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
   }, []);
 
   const getStatusBadge = (status: string) => {

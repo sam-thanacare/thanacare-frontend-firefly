@@ -314,11 +314,11 @@ export default function LoginPage() {
         <nav className="fixed top-0 left-0 right-0 z-50 bg-background border-b">
           <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
             <Image
-              src="/CC-logo-notag.jpg"
+              src="/compassionate_choices.png"
               alt="Compassion & Choices"
-              className="h-10 w-auto"
-              width={40}
-              height={40}
+              className="h-12 w-auto object-contain"
+              width={150}
+              height={48}
               priority
             />
             <ThemeToggle />
@@ -331,9 +331,10 @@ export default function LoginPage() {
           <div
             className="relative flex items-center justify-center p-8 text-white"
             style={{
-              backgroundImage: `url('/empowerment.svg')`,
+              backgroundImage: `url('/empowerment.jpg')`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
             }}
           >
             <div className="absolute inset-0 bg-black/50" />

@@ -38,35 +38,45 @@ export default function MemberView() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Mock data for demonstration
+  // Fetch assignments from API
   useEffect(() => {
-    const mockAssignments: Assignment[] = [
-      {
-        id: '1',
-        documentTitle: 'Dementia Values & Priorities Tool',
-        status: 'completed',
-        progress: 100,
-        assignedAt: '2024-01-10T10:00:00Z',
-        dueDate: '2024-01-15T10:00:00Z',
-        notes:
-          'Please complete this important document to help guide your future care decisions.',
-        trainerName: 'Dr. Sarah Wilson',
-      },
-      {
-        id: '2',
-        documentTitle: 'Dementia Values & Priorities Tool - Updated',
-        status: 'in_progress',
-        progress: 60,
-        assignedAt: '2024-01-12T10:00:00Z',
-        dueDate: '2024-01-20T10:00:00Z',
-        notes:
-          'Updated version with additional questions about end-of-life preferences.',
-        trainerName: 'Dr. Sarah Wilson',
-      },
-    ];
+    const fetchAssignments = async () => {
+      try {
+        setIsLoading(true);
+        const backendUrl =
+          process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
+        const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
 
-    setAssignments(mockAssignments);
-    setIsLoading(false);
+        if (!token) {
+          console.error('No authentication token found');
+          setAssignments([]);
+          setIsLoading(false);
+          return;
+        }
+
+        const response = await fetch(`${backendUrl}/api/dementia-tool/assignments/member`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const assignmentsData: Assignment[] = data.data || [];
+          setAssignments(assignmentsData);
+        } else {
+          console.error('Failed to fetch assignments');
+          setAssignments([]);
+        }
+      } catch (error) {
+        console.error('Error fetching assignments:', error);
+        setAssignments([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAssignments();
   }, []);
 
   const getStatusBadge = (status: string) => {
@@ -212,7 +222,7 @@ export default function MemberView() {
                       View Completed
                     </Button>
                   ) : (
-                    <Link href="/dementia-tool-demo">
+                    <Link href={`/member/documents/${assignment.id}`}>
                       <Button size="sm">
                         {assignment.status === 'assigned' ? (
                           <>
