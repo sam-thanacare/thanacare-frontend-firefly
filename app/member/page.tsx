@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppSelector, useAppDispatch } from '@/lib/store/hooks';
 import { logout } from '@/lib/store/slices/authSlice';
 
 import { MemberDashboard as MemberDashboardComponent } from '@/components/member/MemberDashboard';
+import { MemberDocumentsTab } from '@/components/member/MemberDocumentsTab';
+import { MemberProgressTab } from '@/components/member/MemberProgressTab';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,10 +19,7 @@ import {
   User,
   Heart,
   Activity,
-  BookOpen,
   TrendingUp,
-  Clock,
-  CheckCircle,
   Settings,
 } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -34,14 +33,6 @@ export default function MemberDashboard() {
   const { refreshUserProfile } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [isChecking, setIsChecking] = useState(true);
-  const [stats, setStats] = useState({
-    totalDocuments: 0,
-    completedDocuments: 0,
-    inProgressDocuments: 0,
-    assignedDocuments: 0,
-    overallProgress: 0,
-  });
-  const [statsLoading, setStatsLoading] = useState(true);
 
   // Authentication check
   useEffect(() => {
@@ -95,84 +86,6 @@ export default function MemberDashboard() {
   //     refreshUserProfile();
   //   }
   // }, [isAuthenticated, token, refreshUserProfile]);
-
-  // Fetch dashboard statistics
-  const fetchStats = useCallback(async () => {
-    if (!token) return;
-
-    try {
-      setStatsLoading(true);
-      const backendUrl =
-        process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
-
-      // Fetch real data from API
-      const response = await fetch(
-        `${backendUrl}/api/dementia-tool/assignments/member`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        const assignments = data.data || [];
-
-        const totalDocuments = assignments.length;
-        const completedDocuments = assignments.filter(
-          (a: { status: string }) => a.status === 'completed'
-        ).length;
-        const inProgressDocuments = assignments.filter(
-          (a: { status: string }) => a.status === 'in_progress'
-        ).length;
-        const assignedDocuments = assignments.filter(
-          (a: { status: string }) => a.status === 'assigned'
-        ).length;
-
-        // Calculate overall progress
-        const totalProgress = assignments.reduce(
-          (sum: number, a: { progress?: number }) => sum + (a.progress || 0),
-          0
-        );
-        const overallProgress =
-          totalDocuments > 0 ? Math.round(totalProgress / totalDocuments) : 0;
-
-        setStats({
-          totalDocuments,
-          completedDocuments,
-          inProgressDocuments,
-          assignedDocuments,
-          overallProgress,
-        });
-      } else {
-        // Set to 0 on error instead of showing dummy data
-        setStats({
-          totalDocuments: 0,
-          completedDocuments: 0,
-          inProgressDocuments: 0,
-          assignedDocuments: 0,
-          overallProgress: 0,
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching dashboard stats:', error);
-      // Set to 0 on error instead of showing dummy data
-      setStats({
-        totalDocuments: 0,
-        completedDocuments: 0,
-        inProgressDocuments: 0,
-        assignedDocuments: 0,
-        overallProgress: 0,
-      });
-    } finally {
-      setStatsLoading(false);
-    }
-  }, [token]);
-
-  useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
 
   const handleLogout = () => {
     dispatch(logout()); // This will also clear stored tokens via middleware
@@ -297,90 +210,6 @@ export default function MemberDashboard() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
         <div className="space-y-6">
-          {/* Stats Overview */}
-          <div className="grid gap-4 md:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Documents
-                </CardTitle>
-                <BookOpen className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {statsLoading ? (
-                    <div className="flex items-center space-x-2">
-                      <div className="animate-pulse bg-muted h-6 w-8 rounded"></div>
-                    </div>
-                  ) : (
-                    stats.totalDocuments
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Documents assigned to you
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Completed</CardTitle>
-                <CheckCircle className="h-4 w-4 text-green-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">
-                  {statsLoading ? (
-                    <div className="animate-pulse bg-muted h-6 w-8 rounded"></div>
-                  ) : (
-                    stats.completedDocuments
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Successfully completed
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  In Progress
-                </CardTitle>
-                <Clock className="h-4 w-4 text-blue-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-blue-600">
-                  {statsLoading ? (
-                    <div className="animate-pulse bg-muted h-6 w-8 rounded"></div>
-                  ) : (
-                    stats.inProgressDocuments
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Currently working on
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Overall Progress
-                </CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {statsLoading ? (
-                    <div className="animate-pulse bg-muted h-6 w-8 rounded"></div>
-                  ) : (
-                    `${stats.overallProgress}%`
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Of all documents
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
           {/* Main Tabs */}
           <Tabs
             value={activeTab}
@@ -431,64 +260,11 @@ export default function MemberDashboard() {
             </TabsContent>
 
             <TabsContent value="documents" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <FileText className="h-5 w-5" />
-                    <span>Document Assignments</span>
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Your assigned dementia care planning documents and their
-                    current status
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-medium mb-2">
-                      Document Management
-                    </h3>
-                    <p className="text-muted-foreground mb-4">
-                      Detailed document management features will be available
-                      here
-                    </p>
-                    <Button onClick={() => router.push('/member/documents')}>
-                      <FileText className="h-4 w-4 mr-2" />
-                      View All Documents
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <MemberDocumentsTab />
             </TabsContent>
 
             <TabsContent value="progress" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <TrendingUp className="h-5 w-5" />
-                    <span>Progress Tracking</span>
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Track your progress through dementia care planning documents
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-medium mb-2">
-                      Progress Analytics
-                    </h3>
-                    <p className="text-muted-foreground mb-4">
-                      Detailed progress tracking and analytics will be available
-                      here
-                    </p>
-                    <Button onClick={() => router.push('/member/documents')}>
-                      <TrendingUp className="h-4 w-4 mr-2" />
-                      View Progress Details
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <MemberProgressTab />
             </TabsContent>
 
             <TabsContent value="profile" className="space-y-6">

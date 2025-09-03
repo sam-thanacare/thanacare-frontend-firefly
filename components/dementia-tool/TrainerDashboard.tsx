@@ -40,6 +40,7 @@ import {
   Eye,
   Plus,
 } from 'lucide-react';
+import { useAppSelector } from '@/lib/store/hooks';
 
 interface MemberProgress {
   memberId: string;
@@ -64,6 +65,7 @@ interface Assignment {
 }
 
 export default function TrainerDashboard() {
+  const { user, token } = useAppSelector((state) => state.auth);
   const [memberProgress, setMemberProgress] = useState<MemberProgress[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -74,18 +76,23 @@ export default function TrainerDashboard() {
   // Load real data from API
   useEffect(() => {
     const loadData = async () => {
+      if (!user?.id || !token) return;
+
       try {
         setIsLoading(true);
 
-        // Get trainer ID from auth context or props
-        const trainerId = 'current-trainer-id'; // This should come from auth context
+        // Get trainer ID from auth context
+        // const trainerId = user.id;
+
+        const backendUrl =
+          process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
 
         // Load progress summary
         const progressResponse = await fetch(
-          `/api/dementia-tool/progress/trainer/${trainerId}`,
+          `${backendUrl}/api/dementia-tool/my-progress`,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
           }
@@ -122,10 +129,10 @@ export default function TrainerDashboard() {
 
         // Load assignments
         const assignmentsResponse = await fetch(
-          `/api/dementia-tool/assignments/trainer/${trainerId}`,
+          `${backendUrl}/api/dementia-tool/my-assignments`,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
           }
@@ -178,7 +185,7 @@ export default function TrainerDashboard() {
     };
 
     loadData();
-  }, []);
+  }, [user?.id, token]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {

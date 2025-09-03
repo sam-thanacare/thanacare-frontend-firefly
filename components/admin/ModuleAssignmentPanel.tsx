@@ -29,6 +29,7 @@ import {
   Filter,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { AssignmentDetailsModal } from './AssignmentDetailsModal';
 
 interface User {
   id: string;
@@ -109,6 +110,11 @@ export function ModuleAssignmentPanel() {
   // Search and filter state
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+
+  // Modal state
+  const [selectedAssignment, setSelectedAssignment] =
+    useState<Assignment | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   const backendUrl =
     process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
@@ -218,7 +224,18 @@ export function ModuleAssignmentPanel() {
 
   const handleAssignDocument = async () => {
     if (!selectedMember || !selectedDocument || !selectedTrainer) {
-      toast.error('Please fill in all required fields.');
+      toast.error(
+        'Please fill in all required fields (Member, Document, and Managing Trainer).'
+      );
+      return;
+    }
+
+    // Additional validation to ensure we're only assigning to members
+    const selectedUser = validMemberUsers.find(
+      (user) => user.id === selectedMember
+    );
+    if (!selectedUser || selectedUser.role !== 'member') {
+      toast.error('Documents can only be assigned to members.');
       return;
     }
 
@@ -395,6 +412,25 @@ export function ModuleAssignmentPanel() {
     }
   };
 
+  const handleViewDetails = (assignment: Assignment) => {
+    setSelectedAssignment(assignment);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setIsDetailsModalOpen(false);
+    setSelectedAssignment(null);
+  };
+
+  const handleAssignmentDeleted = () => {
+    // Remove the deleted assignment from the list
+    if (selectedAssignment) {
+      setAssignments((prev) =>
+        prev.filter((assignment) => assignment.id !== selectedAssignment.id)
+      );
+    }
+  };
+
   // Filter assignments based on search and status
   const filteredAssignments = assignments.filter((assignment) => {
     // Add null checks to prevent errors when accessing properties
@@ -426,8 +462,15 @@ export function ModuleAssignmentPanel() {
     );
   }
 
+  // Filter users by role - ensure only members can be assigned documents
   const memberUsers = users.filter((user) => user.role === 'member') || [];
   const trainerUsers = users.filter((user) => user.role === 'trainer') || [];
+
+  // Additional validation to ensure we only have members for assignment
+  const validMemberUsers = memberUsers.filter((user) => {
+    // Double-check that the user is actually a member
+    return user.role === 'member' && user.id && user.name;
+  });
 
   return (
     <div className="space-y-6">
@@ -439,12 +482,14 @@ export function ModuleAssignmentPanel() {
             <span>Assign Dementia Tool Document</span>
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Assign dementia values and priorities documents to system users
+            Assign dementia values and priorities documents to members only. A
+            trainer must be selected to manage and monitor the assignment.
+            Trainers and admins cannot be assigned documents.
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Show message if no users or documents are available */}
-          {(memberUsers.length === 0 ||
+          {(validMemberUsers.length === 0 ||
             trainerUsers.length === 0 ||
             documents.length === 0) && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -455,11 +500,14 @@ export function ModuleAssignmentPanel() {
                     Setup Required
                   </h4>
                   <p className="text-sm text-yellow-700 mt-1">
-                    {memberUsers.length === 0 && 'No members available. '}
-                    {trainerUsers.length === 0 && 'No trainers available. '}
+                    {validMemberUsers.length === 0 &&
+                      'No members available for document assignment. '}
+                    {trainerUsers.length === 0 &&
+                      'No trainers available to manage assignments. '}
                     {documents.length === 0 && 'No documents available. '}
-                    Please create users and documents before assigning dementia
-                    tool documents.
+                    Please create members, trainers, and documents before
+                    assigning dementia tool documents. Note: Documents can only
+                    be assigned to members.
                   </p>
                 </div>
               </div>
@@ -474,8 +522,8 @@ export function ModuleAssignmentPanel() {
                   <SelectValue placeholder="Select a member" />
                 </SelectTrigger>
                 <SelectContent>
-                  {memberUsers.length > 0 ? (
-                    memberUsers.map((user) => (
+                  {validMemberUsers.length > 0 ? (
+                    validMemberUsers.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         <div className="flex items-center space-x-2">
                           <User className="h-4 w-4" />
@@ -488,7 +536,7 @@ export function ModuleAssignmentPanel() {
                     ))
                   ) : (
                     <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                      No members available
+                      No members available for assignment
                     </div>
                   )}
                 </SelectContent>
@@ -496,13 +544,13 @@ export function ModuleAssignmentPanel() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="trainer">Trainer *</Label>
+              <Label htmlFor="trainer">Managing Trainer *</Label>
               <Select
                 value={selectedTrainer}
                 onValueChange={setSelectedTrainer}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a trainer" />
+                  <SelectValue placeholder="Select a trainer to manage this assignment" />
                 </SelectTrigger>
                 <SelectContent>
                   {trainerUsers.length > 0 ? (
@@ -524,6 +572,10 @@ export function ModuleAssignmentPanel() {
                   )}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">
+                The trainer will manage and monitor this assignment for the
+                member.
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -590,7 +642,7 @@ export function ModuleAssignmentPanel() {
                 !selectedMember ||
                 !selectedDocument ||
                 !selectedTrainer ||
-                memberUsers.length === 0 ||
+                validMemberUsers.length === 0 ||
                 trainerUsers.length === 0 ||
                 documents.length === 0
               }
@@ -601,7 +653,7 @@ export function ModuleAssignmentPanel() {
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Assigning...
                 </>
-              ) : memberUsers.length === 0 ||
+              ) : validMemberUsers.length === 0 ||
                 trainerUsers.length === 0 ||
                 documents.length === 0 ? (
                 <>
@@ -726,7 +778,11 @@ export function ModuleAssignmentPanel() {
                       </div>
                       <div className="flex flex-col items-end space-y-2">
                         {getStatusBadge(assignment.status)}
-                        <Button variant="outline" size="sm">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewDetails(assignment)}
+                        >
                           View Details
                         </Button>
                       </div>
@@ -793,6 +849,14 @@ export function ModuleAssignmentPanel() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Assignment Details Modal */}
+      <AssignmentDetailsModal
+        assignment={selectedAssignment}
+        isOpen={isDetailsModalOpen}
+        onClose={handleCloseDetailsModal}
+        onAssignmentDeleted={handleAssignmentDeleted}
+      />
     </div>
   );
 }

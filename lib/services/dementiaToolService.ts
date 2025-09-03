@@ -52,8 +52,11 @@ export interface DementiaResponse {
   document_id: string;
   responses: string;
   progress: number;
+  section_progress: string; // JSON array of section progress percentages
   started_at: string;
   completed_at?: string;
+  last_saved_at: string;
+  auto_save_enabled: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -236,12 +239,9 @@ class DementiaToolService {
       }
 
       const headers = await this.getAuthHeaders();
-      const response = await fetch(
-        `${BACKEND_URL}/api/dementia-tool/assignments/member/${memberId}`,
-        {
-          headers,
-        }
-      );
+      const response = await fetch(`${BACKEND_URL}/api/member/assignments`, {
+        headers,
+      });
       if (!response.ok) {
         throw new Error(
           `Failed to fetch assignments by member: ${response.status}`

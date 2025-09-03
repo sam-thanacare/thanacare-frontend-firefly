@@ -67,20 +67,53 @@ export default function MemberDocumentsPage() {
         const backendUrl =
           process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
 
-        const response = await fetch(
-          `${backendUrl}/api/dementia-tool/assignments/member`,
-          {
-            headers: {
-              Authorization: `Bearer ${currentToken}`,
-            },
-          }
-        );
+        const response = await fetch(`${backendUrl}/api/member/assignments`, {
+          headers: {
+            Authorization: `Bearer ${currentToken}`,
+          },
+        });
 
         if (response.ok) {
           const data = await response.json();
-          const assignmentsData: Assignment[] = data.data || [];
-          setAssignments(assignmentsData);
-          setFilteredAssignments(assignmentsData);
+          const assignmentsData = data.data || data;
+
+          // Transform API data to component format
+          const transformedAssignments: Assignment[] = assignmentsData.map(
+            (assignment: {
+              assignment: {
+                id: string;
+                status: string;
+                assigned_at: string;
+                due_date?: string;
+                notes?: string;
+              };
+              document: {
+                title: string;
+              };
+              response?: {
+                progress: number;
+              };
+              trainer: {
+                name: string;
+              };
+              family: {
+                name: string;
+              };
+            }) => ({
+              id: assignment.assignment.id,
+              documentTitle: assignment.document.title,
+              status: assignment.assignment.status,
+              progress: assignment.response?.progress || 0,
+              assignedAt: assignment.assignment.assigned_at,
+              dueDate: assignment.assignment.due_date,
+              notes: assignment.assignment.notes,
+              trainerName: assignment.trainer.name,
+              familyName: assignment.family.name,
+            })
+          );
+
+          setAssignments(transformedAssignments);
+          setFilteredAssignments(transformedAssignments);
         } else {
           console.error('Failed to fetch assignments');
           setAssignments([]);

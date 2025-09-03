@@ -50,6 +50,7 @@ export function MemberDashboard() {
     assigned: 0,
     overallProgress: 0,
   });
+  const [error, setError] = useState<string | null>(null);
 
   // Load real assignments from API
   useEffect(() => {
@@ -58,18 +59,31 @@ export function MemberDashboard() {
 
       try {
         setIsLoading(true);
-        const response = await fetch(
-          `/api/dementia-tool/assignments/member/${user.id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
+        setError(null);
+        const backendUrl =
+          process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
+        const token =
+          localStorage.getItem('authToken') ||
+          sessionStorage.getItem('authToken');
+
+        if (!token) {
+          console.error('No authentication token found');
+          throw new Error('Authentication required');
+        }
+
+        const response = await fetch(`${backendUrl}/api/member/assignments`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
 
         if (!response.ok) {
-          throw new Error('Failed to load assignments');
+          const errorText = await response.text();
+          console.error('API Error:', response.status, errorText);
+          throw new Error(
+            `Failed to load assignments: ${response.status} ${response.statusText}`
+          );
         }
 
         const data = await response.json();
@@ -125,6 +139,9 @@ export function MemberDashboard() {
         setStats({ total, completed, inProgress, assigned, overallProgress });
       } catch (error) {
         console.error('Error loading assignments:', error);
+        setError(
+          error instanceof Error ? error.message : 'Failed to load assignments'
+        );
         // Set empty state on error
         setAssignments([]);
         setStats({
@@ -167,92 +184,134 @@ export function MemberDashboard() {
     );
   }
 
-  return (
-    <div className="space-y-6">
-      {/* Welcome Header */}
-      <div className="bg-white rounded-lg shadow-sm border p-6">
-        <div className="flex items-center space-x-4">
-          <Avatar className="h-16 w-16">
-            <AvatarImage src={user?.profile_picture_url} alt={user?.name} />
-            <AvatarFallback className="text-lg">
-              {user?.name
-                ?.split(' ')
-                .map((n) => n[0])
-                .join('')
-                .toUpperCase()
-                .slice(0, 2)}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Welcome back, {user?.name}!
-            </h1>
-            <p className="text-gray-600">
-              Here&apos;s an overview of your dementia care planning journey
-            </p>
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <div className="flex items-center space-x-3">
+            <div className="flex-shrink-0">
+              <svg
+                className="h-5 w-5 text-red-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-red-800">
+                Error Loading Dashboard
+              </h3>
+              <p className="text-sm text-red-700 mt-1">{error}</p>
+            </div>
+          </div>
+          <div className="mt-4">
+            <Button
+              onClick={() => window.location.reload()}
+              variant="outline"
+              size="sm"
+              className="text-red-700 border-red-300 hover:bg-red-100"
+            >
+              Try Again
+            </Button>
           </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Documents
-            </CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">
-              Documents assigned to you
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {stats.completed}
+  return (
+    <div className="space-y-6">
+      {/* Welcome Header with Stats */}
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="flex items-center space-x-4">
+            <Avatar className="h-16 w-16">
+              <AvatarImage src={user?.profile_picture_url} alt={user?.name} />
+              <AvatarFallback className="text-lg">
+                {user?.name
+                  ?.split(' ')
+                  .map((n) => n[0])
+                  .join('')
+                  .toUpperCase()
+                  .slice(0, 2)}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Welcome back, {user?.name}!
+              </h1>
+              <p className="text-gray-600">
+                Here&apos;s an overview of your dementia care planning journey
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Successfully completed
-            </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
-            <Clock className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              {stats.inProgress}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Currently working on
-            </p>
-          </CardContent>
-        </Card>
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Documents
+              </CardTitle>
+              <BookOpen className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.total}</div>
+              <p className="text-xs text-muted-foreground">
+                Documents assigned to you
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Overall Progress
-            </CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.overallProgress}%</div>
-            <p className="text-xs text-muted-foreground">Of all documents</p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Completed</CardTitle>
+              <CheckCircle className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">
+                {stats.completed}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Successfully completed
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">In Progress</CardTitle>
+              <Clock className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600">
+                {stats.inProgress}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Currently working on
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Overall Progress
+              </CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.overallProgress}%</div>
+              <p className="text-xs text-muted-foreground">Of all documents</p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Recent Assignments */}

@@ -17,12 +17,13 @@ import {
   Users2,
   GraduationCap,
   Activity,
-  BookOpen,
-  TrendingUp,
   Clock,
   CheckCircle,
+  User,
+  Settings,
 } from 'lucide-react';
 import { TrainerFamiliesTable } from '@/components/trainer/TrainerFamiliesTable';
+import { TrainerDocumentAssignmentPanel } from '@/components/trainer/TrainerDocumentAssignmentPanel';
 import { useAuth } from '@/lib/hooks/useAuth';
 
 export default function TrainerDashboard() {
@@ -66,19 +67,13 @@ export default function TrainerDashboard() {
       const backendUrl =
         process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
 
-      // Fetch real data from API
-      const [familiesResponse, membersResponse, assignmentsResponse] =
-        await Promise.all([
-          fetch(`${backendUrl}/api/families`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          fetch(`${backendUrl}/api/families/members`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          fetch(`${backendUrl}/api/dementia-tool/assignments`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
+      // Fetch assignments data to calculate all metrics
+      const assignmentsResponse = await fetch(
+        `${backendUrl}/api/dementia-tool/my-assignments`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       let totalFamilies = 0;
       let totalMembers = 0;
@@ -87,29 +82,46 @@ export default function TrainerDashboard() {
       let inProgressAssignments = 0;
       let pendingAssignments = 0;
 
-      if (familiesResponse.ok) {
-        const familiesData = await familiesResponse.json();
-        totalFamilies = familiesData.data?.length || 0;
-      }
-
-      if (membersResponse.ok) {
-        const membersData = await membersResponse.json();
-        totalMembers = membersData.data?.length || 0;
-      }
-
       if (assignmentsResponse.ok) {
         const assignmentsData = await assignmentsResponse.json();
         const assignments = assignmentsData.data || [];
+
+        // Calculate total assignments
         totalAssignments = assignments.length;
+
+        // Calculate assignment status counts
         completedAssignments = assignments.filter(
-          (a: { status: string }) => a.status === 'completed'
+          (a: { assignment: { status: string } }) =>
+            a.assignment.status === 'completed'
         ).length;
         inProgressAssignments = assignments.filter(
-          (a: { status: string }) => a.status === 'in_progress'
+          (a: { assignment: { status: string } }) =>
+            a.assignment.status === 'in_progress'
         ).length;
         pendingAssignments = assignments.filter(
-          (a: { status: string }) => a.status === 'pending'
+          (a: { assignment: { status: string } }) =>
+            a.assignment.status === 'assigned'
         ).length;
+
+        // Calculate unique members from assignments
+        const uniqueMembers = new Set(
+          assignments.map((a: { member: { id: string } }) => a.member.id)
+        );
+        totalMembers = uniqueMembers.size;
+
+        // Calculate unique families from assignments
+        const uniqueFamilies = new Set(
+          assignments
+            .filter(
+              (a: { assignment: { family_id: string } }) =>
+                a.assignment.family_id
+            )
+            .map(
+              (a: { assignment: { family_id: string } }) =>
+                a.assignment.family_id
+            )
+        );
+        totalFamilies = uniqueFamilies.size;
       }
 
       setStats({
@@ -288,7 +300,7 @@ export default function TrainerDashboard() {
               }}
               className="space-y-6"
             >
-              <TabsList className="grid w-full grid-cols-4 lg:w-[600px]">
+              <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
                 <TabsTrigger
                   value="families"
                   className="flex items-center space-x-2"
@@ -304,18 +316,11 @@ export default function TrainerDashboard() {
                   <span className="hidden sm:inline">Assignments</span>
                 </TabsTrigger>
                 <TabsTrigger
-                  value="progress"
+                  value="profile"
                   className="flex items-center space-x-2"
                 >
-                  <TrendingUp className="h-4 w-4" />
-                  <span className="hidden sm:inline">Progress</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="tools"
-                  className="flex items-center space-x-2"
-                >
-                  <BookOpen className="h-4 w-4" />
-                  <span className="hidden sm:inline">Tools</span>
+                  <User className="h-4 w-4" />
+                  <span className="hidden sm:inline">Profile</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -337,127 +342,70 @@ export default function TrainerDashboard() {
               </TabsContent>
 
               <TabsContent value="assignments" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <FileText className="h-5 w-5" />
-                      <span>Assignment Management</span>
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      View and manage dementia tool assignments for your
-                      families
-                    </p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid gap-4 md:grid-cols-3">
-                        <Card>
-                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                              Completed
-                            </CardTitle>
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                          </CardHeader>
-                          <CardContent>
-                            <div className="text-2xl font-bold text-green-600">
-                              {stats.completedAssignments}
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                              Successfully completed
-                            </p>
-                          </CardContent>
-                        </Card>
-                        <Card>
-                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                              In Progress
-                            </CardTitle>
-                            <Clock className="h-4 w-4 text-blue-600" />
-                          </CardHeader>
-                          <CardContent>
-                            <div className="text-2xl font-bold text-blue-600">
-                              {stats.inProgressAssignments}
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                              Currently working on
-                            </p>
-                          </CardContent>
-                        </Card>
-                        <Card>
-                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                              Pending
-                            </CardTitle>
-                            <Activity className="h-4 w-4 text-orange-600" />
-                          </CardHeader>
-                          <CardContent>
-                            <div className="text-2xl font-bold text-orange-600">
-                              {stats.pendingAssignments}
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                              Awaiting start
-                            </p>
-                          </CardContent>
-                        </Card>
-                      </div>
-                      <div className="text-center py-8">
-                        <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="text-lg font-medium mb-2">
-                          Assignment Details
-                        </h3>
-                        <p className="text-muted-foreground mb-4">
-                          Detailed assignment management features will be
-                          available here
+                <div className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                          Completed
+                        </CardTitle>
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold text-green-600">
+                          {stats.completedAssignments}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Successfully completed
                         </p>
-                        <Button onClick={() => setActiveTab('tools')}>
-                          <FileText className="h-4 w-4 mr-2" />
-                          Manage Assignments
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                          In Progress
+                        </CardTitle>
+                        <Clock className="h-4 w-4 text-blue-600" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold text-blue-600">
+                          {stats.inProgressAssignments}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Currently working on
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                          Pending
+                        </CardTitle>
+                        <Activity className="h-4 w-4 text-orange-600" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold text-orange-600">
+                          {stats.pendingAssignments}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Awaiting start
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  <TrainerDocumentAssignmentPanel />
+                </div>
               </TabsContent>
 
-              <TabsContent value="progress" className="space-y-6">
+              <TabsContent value="profile" className="space-y-6">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
-                      <TrendingUp className="h-5 w-5" />
-                      <span>Progress Tracking</span>
+                      <User className="h-5 w-5" />
+                      <span>Profile Management</span>
                     </CardTitle>
                     <p className="text-sm text-muted-foreground">
-                      Monitor family member progress and engagement
-                    </p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-8">
-                      <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-medium mb-2">
-                        Progress Analytics
-                      </h3>
-                      <p className="text-muted-foreground mb-4">
-                        Detailed progress tracking and analytics will be
-                        available here
-                      </p>
-                      <Button onClick={() => setActiveTab('assignments')}>
-                        <TrendingUp className="h-4 w-4 mr-2" />
-                        View Progress Dashboard
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="tools" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <BookOpen className="h-5 w-5" />
-                      <span>Dementia Tools</span>
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      Access and manage dementia care planning tools
+                      Manage your personal information and account settings
                     </p>
                   </CardHeader>
                   <CardContent>
@@ -465,18 +413,18 @@ export default function TrainerDashboard() {
                       <Button
                         variant="outline"
                         className="h-20 flex-col gap-2"
-                        onClick={() => setActiveTab('assignments')}
+                        onClick={() => router.push('/trainer/profile')}
                       >
-                        <FileText className="h-6 w-6" />
-                        Dementia Values Tool
+                        <User className="h-6 w-6" />
+                        Edit Profile
                       </Button>
                       <Button
                         variant="outline"
                         className="h-20 flex-col gap-2"
-                        onClick={() => setActiveTab('progress')}
+                        onClick={() => router.push('/change-password')}
                       >
-                        <Users className="h-6 w-6" />
-                        Member Progress View
+                        <Settings className="h-6 w-6" />
+                        Change Password
                       </Button>
                     </div>
                   </CardContent>

@@ -116,9 +116,9 @@ export function UsersTable() {
         // For trainers, fetch organization and families they manage
         if (user.role === 'trainer') {
           try {
-            // Get all organizations
-            const orgsResponse = await fetch(
-              `${backendUrl}/api/organizations`,
+            // Fetch families directly assigned to this trainer
+            const familiesResponse = await fetch(
+              `${backendUrl}/api/trainers/${user.id}/families`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,
@@ -127,102 +127,95 @@ export function UsersTable() {
               }
             );
 
-            if (orgsResponse.ok) {
-              const orgsData = await orgsResponse.json();
-              const organizations = orgsData.data || [];
+            if (familiesResponse.ok) {
+              const familiesData = await familiesResponse.json();
+              const families = familiesData.data?.families || [];
 
-              if (organizations.length > 0) {
-                // For demo purposes, we'll show the first organization
-                // In a real implementation, you'd query by trainer ID
-                const selectedOrg = organizations[0];
-                userWithProfile.organization = selectedOrg;
+              if (families.length > 0) {
+                // Get organization info from the first family
+                const firstFamily = families[0];
 
-                // Fetch families for this organization
-                const familiesResponse = await fetch(
-                  `${backendUrl}/api/organizations/${selectedOrg.id}/families`,
-                  {
-                    headers: {
-                      Authorization: `Bearer ${token}`,
-                      'Content-Type': 'application/json',
-                    },
+                // Fetch organization details
+                try {
+                  const orgResponse = await fetch(
+                    `${backendUrl}/api/organizations/${firstFamily.organization_id}`,
+                    {
+                      headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                      },
+                    }
+                  );
+
+                  if (orgResponse.ok) {
+                    const orgData = await orgResponse.json();
+                    userWithProfile.organization = orgData.data;
+                  } else {
+                    // Fallback if organization fetch fails
+                    userWithProfile.organization = {
+                      id: firstFamily.organization_id,
+                      name: 'Organization',
+                      created_at: new Date().toISOString(),
+                    };
                   }
+                } catch (error) {
+                  console.error('Error fetching organization:', error);
+                  userWithProfile.organization = {
+                    id: firstFamily.organization_id,
+                    name: 'Organization',
+                    created_at: new Date().toISOString(),
+                  };
+                }
+
+                // Enhance family data with member counts and additional details
+                const enhancedFamilies = await Promise.all(
+                  families.map(async (family: Family) => {
+                    try {
+                      // Get family members to count them
+                      const membersResponse = await fetch(
+                        `${backendUrl}/api/families/${family.id}/members`,
+                        {
+                          headers: {
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                          },
+                        }
+                      );
+
+                      let memberCount = 0;
+                      if (membersResponse.ok) {
+                        const membersData = await membersResponse.json();
+                        const members = membersData.data || [];
+                        memberCount = members.length;
+                      }
+
+                      return {
+                        ...family,
+                        member_count: memberCount,
+                        status: 'active',
+                        last_activity: new Date().toISOString(),
+                      };
+                    } catch (error) {
+                      console.error('Error enhancing family data:', error);
+                      return {
+                        ...family,
+                        member_count: 0,
+                        status: 'unknown',
+                      };
+                    }
+                  })
                 );
 
-                if (familiesResponse.ok) {
-                  const familiesData = await familiesResponse.json();
-                  const families = familiesData.families || [];
-
-                  if (families.length > 0) {
-                    // Enhance family data with member counts and additional details
-                    const enhancedFamilies = await Promise.all(
-                      families.map(async (family: Family) => {
-                        try {
-                          // Get all users to count members in this family
-                          const usersResponse = await fetch(
-                            `${backendUrl}/api/admin/users`,
-                            {
-                              headers: {
-                                Authorization: `Bearer ${token}`,
-                                'Content-Type': 'application/json',
-                              },
-                            }
-                          );
-
-                          if (usersResponse.ok) {
-                            const usersData = await usersResponse.json();
-                            const allUsers = usersData.data || [];
-
-                            // Count members in this family (simplified logic for demo)
-                            // In real implementation, you'd query by family ID
-                            const memberCount = allUsers.filter(
-                              (u: User) => u.role === 'member'
-                            ).length;
-
-                            return {
-                              ...family,
-                              member_count: memberCount,
-                              // Add some demo data to make it more interesting
-                              status: 'active',
-                              last_activity: new Date().toISOString(),
-                            };
-                          }
-                          return {
-                            ...family,
-                            member_count: 0,
-                            status: 'active',
-                          };
-                        } catch (error) {
-                          console.error('Error enhancing family data:', error);
-                          return {
-                            ...family,
-                            member_count: 0,
-                            status: 'unknown',
-                          };
-                        }
-                      })
-                    );
-
-                    userWithProfile.families = enhancedFamilies;
-                  } else {
-                    // No families found for this organization
-                    userWithProfile.families = [];
-                  }
-                } else {
-                  console.warn(
-                    'Failed to fetch families for organization:',
-                    selectedOrg.id
-                  );
-                  userWithProfile.families = [];
-                }
+                userWithProfile.families = enhancedFamilies;
               } else {
-                // No organizations found
-                userWithProfile.organization = undefined;
+                // No families found for this trainer
                 userWithProfile.families = [];
+                userWithProfile.organization = undefined;
               }
             } else {
-              console.warn('Failed to fetch organizations');
-              userWithProfile.organization = undefined;
+              console.warn('Failed to fetch families for trainer:', user.id);
               userWithProfile.families = [];
+              userWithProfile.organization = undefined;
             }
           } catch (error) {
             console.error('Error fetching trainer data:', error);

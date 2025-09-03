@@ -56,14 +56,11 @@ export default function MemberView() {
           return;
         }
 
-        const response = await fetch(
-          `${backendUrl}/api/dementia-tool/assignments/member`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await fetch(`${backendUrl}/api/member/assignments`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         if (response.ok) {
           const data = await response.json();
