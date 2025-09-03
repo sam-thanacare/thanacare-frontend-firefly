@@ -197,21 +197,21 @@ export default function DementiaValuesForm({
   ]);
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  
+
   // Use ref to store latest form data to avoid dependency issues
   const formDataRef = useRef(formData);
   const progressRef = useRef(progress);
   const sectionProgressRef = useRef(sectionProgress);
-  
+
   // Update refs whenever state changes
   useEffect(() => {
     formDataRef.current = formData;
   }, [formData]);
-  
+
   useEffect(() => {
     progressRef.current = progress;
   }, [progress]);
-  
+
   useEffect(() => {
     sectionProgressRef.current = sectionProgress;
   }, [sectionProgress]);
@@ -312,7 +312,7 @@ export default function DementiaValuesForm({
       const currentFormData = formDataRef.current;
       const currentProgress = progressRef.current;
       const currentSectionProgress = sectionProgressRef.current;
-      
+
       // Convert form data to backend format
       const backendData = {
         assignment_id: assignmentId,
@@ -326,15 +326,18 @@ export default function DementiaValuesForm({
               currentFormData.carePreferences.aroundTheClockAssistance,
             no_longer_recognize_loved_ones:
               currentFormData.carePreferences.noLongerRecognizeLovedOnes,
-            unable_to_walk_safely: currentFormData.carePreferences.unableToWalkSafely,
-            unable_to_bathe_clean: currentFormData.carePreferences.unableToBatheClean,
+            unable_to_walk_safely:
+              currentFormData.carePreferences.unableToWalkSafely,
+            unable_to_bathe_clean:
+              currentFormData.carePreferences.unableToBatheClean,
             unable_to_remain_at_home:
               currentFormData.carePreferences.unableToRemainAtHome,
             no_bladder_bowel_control:
               currentFormData.carePreferences.noBladderBowelControl,
             no_awareness_of_surroundings:
               currentFormData.carePreferences.noAwarenessOfSurroundings,
-            unable_to_communicate: currentFormData.carePreferences.unableToCommunicate,
+            unable_to_communicate:
+              currentFormData.carePreferences.unableToCommunicate,
           },
           hospice_care: {
             interest: currentFormData.hospiceCare.interest,
@@ -439,7 +442,9 @@ export default function DementiaValuesForm({
     // Check if there's any actual content to save using refs
     const currentFormData = formDataRef.current;
     const hasContent =
-      Object.values(currentFormData.carePreferences).some((value) => value !== '') ||
+      Object.values(currentFormData.carePreferences).some(
+        (value) => value !== ''
+      ) ||
       currentFormData.hospiceCare.interest !== '' ||
       currentFormData.foodAndDrink.stopFoodAndDrink ||
       currentFormData.additionalInfo !== '';
