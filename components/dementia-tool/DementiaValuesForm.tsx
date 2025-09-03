@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Card,
   CardContent,
@@ -197,6 +197,24 @@ export default function DementiaValuesForm({
   ]);
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  
+  // Use ref to store latest form data to avoid dependency issues
+  const formDataRef = useRef(formData);
+  const progressRef = useRef(progress);
+  const sectionProgressRef = useRef(sectionProgress);
+  
+  // Update refs whenever state changes
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
+  
+  useEffect(() => {
+    progressRef.current = progress;
+  }, [progress]);
+  
+  useEffect(() => {
+    sectionProgressRef.current = sectionProgress;
+  }, [sectionProgress]);
 
   // Load initial data if provided
   useEffect(() => {
@@ -290,6 +308,11 @@ export default function DementiaValuesForm({
     setSaveStatus('saving');
 
     try {
+      // Use refs to get the latest values without causing dependency issues
+      const currentFormData = formDataRef.current;
+      const currentProgress = progressRef.current;
+      const currentSectionProgress = sectionProgressRef.current;
+      
       // Convert form data to backend format
       const backendData = {
         assignment_id: assignmentId,
@@ -298,31 +321,31 @@ export default function DementiaValuesForm({
         responses: JSON.stringify({
           care_preferences: {
             advanced_dementia_stage:
-              formData.carePreferences.advancedDementiaStage,
+              currentFormData.carePreferences.advancedDementiaStage,
             around_the_clock_assistance:
-              formData.carePreferences.aroundTheClockAssistance,
+              currentFormData.carePreferences.aroundTheClockAssistance,
             no_longer_recognize_loved_ones:
-              formData.carePreferences.noLongerRecognizeLovedOnes,
-            unable_to_walk_safely: formData.carePreferences.unableToWalkSafely,
-            unable_to_bathe_clean: formData.carePreferences.unableToBatheClean,
+              currentFormData.carePreferences.noLongerRecognizeLovedOnes,
+            unable_to_walk_safely: currentFormData.carePreferences.unableToWalkSafely,
+            unable_to_bathe_clean: currentFormData.carePreferences.unableToBatheClean,
             unable_to_remain_at_home:
-              formData.carePreferences.unableToRemainAtHome,
+              currentFormData.carePreferences.unableToRemainAtHome,
             no_bladder_bowel_control:
-              formData.carePreferences.noBladderBowelControl,
+              currentFormData.carePreferences.noBladderBowelControl,
             no_awareness_of_surroundings:
-              formData.carePreferences.noAwarenessOfSurroundings,
-            unable_to_communicate: formData.carePreferences.unableToCommunicate,
+              currentFormData.carePreferences.noAwarenessOfSurroundings,
+            unable_to_communicate: currentFormData.carePreferences.unableToCommunicate,
           },
           hospice_care: {
-            interest: formData.hospiceCare.interest,
+            interest: currentFormData.hospiceCare.interest,
           },
           food_and_drink: {
-            stop_food_and_drink: formData.foodAndDrink.stopFoodAndDrink,
+            stop_food_and_drink: currentFormData.foodAndDrink.stopFoodAndDrink,
           },
-          additional_info: formData.additionalInfo,
+          additional_info: currentFormData.additionalInfo,
         }),
-        progress: progress,
-        section_progress: JSON.stringify(sectionProgress),
+        progress: currentProgress,
+        section_progress: JSON.stringify(currentSectionProgress),
         auto_save_enabled: autoSaveEnabled,
       };
 
@@ -352,10 +375,7 @@ export default function DementiaValuesForm({
     user,
     assignmentId,
     initialData?.document?.id,
-    progress,
-    sectionProgress,
     autoSaveEnabled,
-    formData,
     onSave,
   ]);
 
@@ -408,25 +428,30 @@ export default function DementiaValuesForm({
     const newProgress =
       totalFields > 0 ? Math.round((completedFields / totalFields) * 100) : 0;
     setProgress(newProgress);
+  }, [formData]);
 
-    // Auto-save if enabled and progress has changed and there's actual content
-    if (autoSaveEnabled && assignmentId && newProgress > 0) {
-      // Check if there's any actual content to save
-      const hasContent =
-        Object.values(formData.carePreferences).some((value) => value !== '') ||
-        formData.hospiceCare.interest !== '' ||
-        formData.foodAndDrink.stopFoodAndDrink ||
-        formData.additionalInfo !== '';
-
-      if (hasContent) {
-        const timeoutId = setTimeout(() => {
-          handleSave();
-        }, 2000); // Auto-save after 2 seconds of inactivity
-
-        return () => clearTimeout(timeoutId);
-      }
+  // Separate effect for auto-save to prevent infinite loops
+  useEffect(() => {
+    if (!autoSaveEnabled || !assignmentId || progressRef.current === 0) {
+      return;
     }
-  }, [formData, autoSaveEnabled, assignmentId, handleSave]);
+
+    // Check if there's any actual content to save using refs
+    const currentFormData = formDataRef.current;
+    const hasContent =
+      Object.values(currentFormData.carePreferences).some((value) => value !== '') ||
+      currentFormData.hospiceCare.interest !== '' ||
+      currentFormData.foodAndDrink.stopFoodAndDrink ||
+      currentFormData.additionalInfo !== '';
+
+    if (hasContent) {
+      const timeoutId = setTimeout(() => {
+        handleSave();
+      }, 2000); // Auto-save after 2 seconds of inactivity
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [autoSaveEnabled, assignmentId, handleSave]);
 
   // Helper function to get nested field values
   const getFieldValue = (data: DementiaFormData, fieldPath: string) => {
