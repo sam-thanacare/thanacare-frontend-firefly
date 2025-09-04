@@ -126,19 +126,16 @@ export default function TrainerProfilePage() {
         localStorage.getItem('authToken') ||
         sessionStorage.getItem('authToken');
 
-      const response = await fetch(
-        `${backendUrl}/api/users/profile/picture`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            profile_picture_url: tempImageUrl,
-          }),
-        }
-      );
+      const response = await fetch(`${backendUrl}/api/users/profile/picture`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          profile_picture_url: tempImageUrl,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error('Failed to update profile picture');
