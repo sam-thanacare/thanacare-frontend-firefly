@@ -40,7 +40,7 @@ interface Assignment {
 
 export function MemberDashboard() {
   const router = useRouter();
-  const { user } = useAppSelector((state) => state.auth);
+  const { user, token } = useAppSelector((state) => state.auth);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -62,21 +62,21 @@ export function MemberDashboard() {
         setError(null);
         const backendUrl =
           process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
-        const token =
-          localStorage.getItem('authToken') ||
-          sessionStorage.getItem('authToken');
 
         if (!token) {
           console.error('No authentication token found');
           throw new Error('Authentication required');
         }
 
-        const response = await fetch(`${backendUrl}/api/member/assignments`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
+        const response = await fetch(
+          `${backendUrl}/api/dementia-tool/my-assignments`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
 
         if (!response.ok) {
           const errorText = await response.text();
@@ -88,6 +88,20 @@ export function MemberDashboard() {
 
         const data = await response.json();
         const assignmentsData = data.data || data;
+
+        // Ensure assignmentsData is an array before calling map
+        if (!Array.isArray(assignmentsData)) {
+          console.warn('Assignments data is not an array:', assignmentsData);
+          setAssignments([]);
+          setStats({
+            total: 0,
+            completed: 0,
+            inProgress: 0,
+            assigned: 0,
+            overallProgress: 0,
+          });
+          return;
+        }
 
         // Transform API data to component format
         const transformedAssignments: Assignment[] = assignmentsData.map(
@@ -157,7 +171,7 @@ export function MemberDashboard() {
     };
 
     loadAssignments();
-  }, [user?.id]);
+  }, [user?.id, token]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {

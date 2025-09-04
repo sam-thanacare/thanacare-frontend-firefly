@@ -88,6 +88,13 @@ export function MemberProgressTab() {
           const data = await assignmentsResponse.json();
           const assignmentsData = data.data || data;
 
+          // Ensure assignmentsData is an array before calling map
+          if (!Array.isArray(assignmentsData)) {
+            console.warn('Assignments data is not an array:', assignmentsData);
+            setAssignments([]);
+            return;
+          }
+
           // Transform API data to component format
           const transformedAssignments: Assignment[] = assignmentsData.map(
             (assignment: {

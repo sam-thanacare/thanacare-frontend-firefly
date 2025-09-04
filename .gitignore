@@ -45,3 +45,6 @@ next-env.d.ts
 # Markdown files (except main README.md)
 *.md
 !README.md
+
+# Test scripts (prevent accidental commits)
+scripts/test_*.sh

@@ -1,0 +1,55 @@
+# Cursor ignore file for frontend project
+# This file controls what files Cursor agent can access
+
+# Ignore build artifacts
+.next/
+out/
+build/
+dist/
+
+# Ignore node_modules
+node_modules/
+
+# Ignore temporary files
+*.tmp
+*.swp
+*.swo
+*~
+
+# Ignore OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Ignore IDE files
+.vscode/
+.idea/
+
+# Ignore logs
+*.log
+
+# Allow access to important directories and files
+!app/
+!components/
+!lib/
+!public/
+!scripts/
+!docs/
+!README.md
+!package.json
+!package-lock.json
+!tsconfig.json
+!next.config.ts
+!middleware.ts
+!components.json
+!postcss.config.mjs
+!eslint.config.mjs
+!vercel.json
+
+# Allow access to environment files for configuration
+!.env.example
+!.env.local.example

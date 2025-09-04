@@ -127,7 +127,7 @@ export default function TrainerProfilePage() {
         sessionStorage.getItem('authToken');
 
       const response = await fetch(
-        `${backendUrl}/api/trainer/profile/picture`,
+        `${backendUrl}/api/users/profile/picture`,
         {
           method: 'PUT',
           headers: {

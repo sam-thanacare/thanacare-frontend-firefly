@@ -253,7 +253,7 @@ export function ModuleAssignmentPanel() {
         }
       );
 
-      let familyId = '';
+      let familyId = null;
       if (memberProfileResponse.ok) {
         const memberProfile = await memberProfileResponse.json();
         if (
@@ -269,7 +269,7 @@ export function ModuleAssignmentPanel() {
         member_id: selectedMember,
         trainer_id: selectedTrainer,
         family_id: familyId,
-        due_date: dueDate || null,
+        due_date: dueDate ? new Date(dueDate).toISOString() : null,
         notes: notes || null,
       };
 

@@ -115,7 +115,7 @@ export function TrainerDocumentAssignmentPanel() {
       setLoading(true);
 
       // Fetch members (only members)
-      const membersResponse = await fetch(`${backendUrl}/api/admin/users`, {
+      const membersResponse = await fetch(`${backendUrl}/api/trainer/members`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -123,8 +123,7 @@ export function TrainerDocumentAssignmentPanel() {
 
       if (membersResponse.ok) {
         const membersData = await membersResponse.json();
-        const memberUsers =
-          membersData.data?.filter((u: User) => u.role === 'member') || [];
+        const memberUsers = membersData.data || [];
         setMembers(memberUsers);
       }
 
@@ -182,7 +181,7 @@ export function TrainerDocumentAssignmentPanel() {
 
       // Get member profile to get family_id
       const memberProfileResponse = await fetch(
-        `${backendUrl}/api/admin/user-profile?user_id=${selectedMember}`,
+        `${backendUrl}/api/trainer/member-profile?user_id=${selectedMember}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -191,12 +190,14 @@ export function TrainerDocumentAssignmentPanel() {
         }
       );
 
-      let familyId = '';
+      let familyId = null;
       if (memberProfileResponse.ok) {
         const memberProfile = await memberProfileResponse.json();
         if (
           memberProfile.member_profile &&
-          memberProfile.member_profile.family_id
+          memberProfile.member_profile.family_id &&
+          memberProfile.member_profile.family_id !==
+            '00000000-0000-0000-0000-000000000000'
         ) {
           familyId = memberProfile.member_profile.family_id;
         }
@@ -207,7 +208,7 @@ export function TrainerDocumentAssignmentPanel() {
         member_id: selectedMember,
         trainer_id: user?.id,
         family_id: familyId,
-        due_date: dueDate || null,
+        due_date: dueDate ? new Date(dueDate).toISOString() : null,
         notes: notes || null,
       };
 
@@ -323,18 +324,20 @@ export function TrainerDocumentAssignmentPanel() {
               Assign Document
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl w-full mx-4 sm:mx-0">
             <DialogHeader>
               <DialogTitle>Assign Document to Member</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="member">Member *</Label>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="member" className="text-sm font-medium">
+                  Member *
+                </Label>
                 <Select
                   value={selectedMember}
                   onValueChange={setSelectedMember}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a member" />
                   </SelectTrigger>
                   <SelectContent>
@@ -347,13 +350,15 @@ export function TrainerDocumentAssignmentPanel() {
                 </Select>
               </div>
 
-              <div>
-                <Label htmlFor="document">Document *</Label>
+              <div className="space-y-2">
+                <Label htmlFor="document" className="text-sm font-medium">
+                  Document *
+                </Label>
                 <Select
                   value={selectedDocument}
                   onValueChange={setSelectedDocument}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a document" />
                   </SelectTrigger>
                   <SelectContent>
@@ -366,37 +371,45 @@ export function TrainerDocumentAssignmentPanel() {
                 </Select>
               </div>
 
-              <div>
-                <Label htmlFor="due-date">Due Date (Optional)</Label>
+              <div className="space-y-2">
+                <Label htmlFor="due-date" className="text-sm font-medium">
+                  Due Date (Optional)
+                </Label>
                 <Input
                   id="due-date"
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
+                  className="w-full"
                 />
               </div>
 
-              <div>
-                <Label htmlFor="notes">Notes (Optional)</Label>
+              <div className="space-y-2">
+                <Label htmlFor="notes" className="text-sm font-medium">
+                  Notes (Optional)
+                </Label>
                 <Textarea
                   id="notes"
                   placeholder="Add any notes for this assignment..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={3}
+                  className="w-full resize-none"
                 />
               </div>
 
-              <div className="flex justify-end space-x-2">
+              <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-4">
                 <Button
                   variant="outline"
                   onClick={() => setIsAssignDialogOpen(false)}
+                  className="w-full sm:w-auto"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleAssignDocument}
                   disabled={assigning || !selectedMember || !selectedDocument}
+                  className="w-full sm:w-auto"
                 >
                   {assigning ? 'Assigning...' : 'Assign Document'}
                 </Button>

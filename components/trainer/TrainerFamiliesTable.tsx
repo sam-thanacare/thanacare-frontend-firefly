@@ -44,6 +44,7 @@ interface Family {
   organization_id: string;
   created_at: string;
   updated_at: string;
+  member_count?: number;
 }
 
 interface OrganizationResponse {
@@ -108,7 +109,37 @@ export function TrainerFamiliesTable() {
 
       const responseData = await response.json();
       const data: FamilyResponse[] = responseData.data || [];
-      setFamilies(data);
+
+      // Fetch member count for each family
+      const familiesWithMemberCount = await Promise.all(
+        data.map(async (family) => {
+          try {
+            const membersResponse = await fetch(
+              `${backendUrl}/api/families/${family.id}/members`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+
+            if (membersResponse.ok) {
+              const membersData = await membersResponse.json();
+              const members = membersData.data || [];
+              return { ...family, member_count: members.length };
+            }
+            return { ...family, member_count: 0 };
+          } catch (error) {
+            console.error(
+              `Error fetching members for family ${family.id}:`,
+              error
+            );
+            return { ...family, member_count: 0 };
+          }
+        })
+      );
+
+      setFamilies(familiesWithMemberCount);
     } catch (error) {
       console.error('Error fetching families:', error);
       toast.error('Failed to fetch families');
@@ -222,10 +253,24 @@ export function TrainerFamiliesTable() {
     }
   };
 
-  const handleDeleteFamily = async (familyId: string) => {
+  const handleDeleteFamily = async (
+    familyId: string,
+    familyName: string,
+    memberCount: number = 0
+  ) => {
     if (!token) return;
 
-    if (!confirm('Are you sure you want to delete this family?')) {
+    // Check if family has members
+    if (memberCount > 0) {
+      toast.error(
+        `Cannot delete family "${familyName}" because it has ${memberCount} active member(s). Please remove all members first.`
+      );
+      return;
+    }
+
+    if (
+      !confirm(`Are you sure you want to delete the family "${familyName}"?`)
+    ) {
       return;
     }
 
@@ -239,7 +284,7 @@ export function TrainerFamiliesTable() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete family');
+        throw new Error(errorData.error || 'Failed to delete family');
       }
 
       toast.success('Family deleted successfully');
@@ -414,6 +459,7 @@ export function TrainerFamiliesTable() {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Organization</TableHead>
+                <TableHead>Members</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -421,7 +467,7 @@ export function TrainerFamiliesTable() {
             <TableBody>
               {filteredFamilies.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8">
+                  <TableCell colSpan={5} className="text-center py-8">
                     {searchTerm
                       ? 'No families found matching your search.'
                       : 'No families found.'}
@@ -438,6 +484,18 @@ export function TrainerFamiliesTable() {
                     <TableCell>
                       <Badge variant="secondary">
                         {getOrganizationName(family.organization_id)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          family.member_count && family.member_count > 0
+                            ? 'default'
+                            : 'outline'
+                        }
+                      >
+                        {family.member_count || 0} member
+                        {(family.member_count || 0) !== 1 ? 's' : ''}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -458,10 +516,22 @@ export function TrainerFamiliesTable() {
                         <Button
                           variant="outline"
                           size="sm"
+                          disabled={
+                            !!(family.member_count && family.member_count > 0)
+                          }
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDeleteFamily(family.id);
+                            handleDeleteFamily(
+                              family.id,
+                              family.name,
+                              family.member_count || 0
+                            );
                           }}
+                          title={
+                            family.member_count && family.member_count > 0
+                              ? 'Cannot delete family with active members'
+                              : 'Delete family'
+                          }
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

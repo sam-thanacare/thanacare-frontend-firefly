@@ -102,6 +102,13 @@ export default function TrainerDashboard() {
           const progressData = await progressResponse.json();
           const progressList = progressData.data || progressData;
 
+          // Ensure progressList is an array before calling map
+          if (!Array.isArray(progressList)) {
+            console.warn('Progress data is not an array:', progressList);
+            setMemberProgress([]);
+            return;
+          }
+
           const transformedProgress: MemberProgress[] = progressList.map(
             (p: {
               member_id: string;
@@ -141,6 +148,13 @@ export default function TrainerDashboard() {
         if (assignmentsResponse.ok) {
           const assignmentsData = await assignmentsResponse.json();
           const assignmentsList = assignmentsData.data || assignmentsData;
+
+          // Ensure assignmentsList is an array before calling map
+          if (!Array.isArray(assignmentsList)) {
+            console.warn('Assignments data is not an array:', assignmentsList);
+            setAssignments([]);
+            return;
+          }
 
           const transformedAssignments: Assignment[] = assignmentsList.map(
             (assignment: {
