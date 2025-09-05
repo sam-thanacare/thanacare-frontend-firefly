@@ -55,12 +55,35 @@ export default function DocumentFillPage() {
 
   useEffect(() => {
     const fetchAssignment = async () => {
-      if (!token || !assignmentId) return;
+      console.log('🔄 DocumentDetailPage: Starting to fetch assignment');
+      console.log('🔑 DocumentDetailPage: Token exists:', !!token);
+      console.log('🆔 DocumentDetailPage: Assignment ID:', assignmentId);
+
+      if (!token || !assignmentId) {
+        console.log('❌ DocumentDetailPage: Missing token or assignment ID');
+        console.log(
+          '❌ DocumentDetailPage: Token:',
+          !!token,
+          'Assignment ID:',
+          assignmentId
+        );
+        return;
+      }
 
       try {
         setIsLoading(true);
         const backendUrl =
           process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
+
+        console.log('🌐 DocumentDetailPage: Backend URL:', backendUrl);
+        console.log(
+          '📡 DocumentDetailPage: Making API call to:',
+          `${backendUrl}/api/dementia-tool/assignments/${assignmentId}`
+        );
+        console.log(
+          '🔐 DocumentDetailPage: Using token (first 20 chars):',
+          token.substring(0, 20) + '...'
+        );
 
         const response = await fetch(
           `${backendUrl}/api/dementia-tool/assignments/${assignmentId}`,
@@ -71,19 +94,52 @@ export default function DocumentFillPage() {
           }
         );
 
+        console.log(
+          '📊 DocumentDetailPage: API Response status:',
+          response.status
+        );
+        console.log(
+          '📊 DocumentDetailPage: API Response headers:',
+          Object.fromEntries(response.headers.entries())
+        );
+
         if (response.ok) {
           const responseData = await response.json();
-          setAssignment(responseData.data || responseData);
+          console.log('📦 DocumentDetailPage: Raw API response:', responseData);
+
+          const assignmentData = responseData.data || responseData;
+          console.log(
+            '📄 DocumentDetailPage: Assignment data:',
+            assignmentData
+          );
+
+          setAssignment(assignmentData);
+          console.log('✅ DocumentDetailPage: Successfully loaded assignment');
         } else {
-          console.error('Failed to fetch assignment');
+          const errorText = await response.text();
+          console.error('❌ DocumentDetailPage: Failed to fetch assignment');
+          console.error(
+            '❌ DocumentDetailPage: Response status:',
+            response.status
+          );
+          console.error('❌ DocumentDetailPage: Response text:', errorText);
           toast.error('Failed to load document assignment');
           router.push('/member/documents');
         }
       } catch (error) {
-        console.error('Error fetching assignment:', error);
+        console.error(
+          '❌ DocumentDetailPage: Error fetching assignment:',
+          error
+        );
+        console.error('❌ DocumentDetailPage: Error details:', {
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+          name: error instanceof Error ? error.name : undefined,
+        });
         toast.error('Error loading document assignment');
         router.push('/member/documents');
       } finally {
+        console.log('🏁 DocumentDetailPage: Assignment fetching completed');
         setIsLoading(false);
       }
     };

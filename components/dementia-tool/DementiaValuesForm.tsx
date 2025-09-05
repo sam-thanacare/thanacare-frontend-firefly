@@ -60,6 +60,12 @@ interface DementiaFormData {
   additionalInfo: string;
 }
 
+interface DementiaValuesFormProps {
+  assignmentId: string;
+  initialData?: AssignmentDetails;
+  onSave?: (response: DementiaResponse) => void;
+}
+
 const CARE_OPTIONS = {
   liveAsLongAsPossible: 'Live as Long as Possible',
   treatButNotAggressively: 'Treat me but Not Aggressively',
@@ -152,18 +158,19 @@ interface AssignmentDetails {
   };
 }
 
-interface DementiaValuesFormProps {
-  assignmentId?: string;
-  initialData?: AssignmentDetails;
-  onSave?: (response: DementiaResponse) => void;
-}
-
 export default function DementiaValuesForm({
   assignmentId,
   initialData,
   onSave,
 }: DementiaValuesFormProps) {
+  console.log('🔄 DementiaValuesForm: Component initialized');
+  console.log('🆔 DementiaValuesForm: Assignment ID:', assignmentId);
+  console.log('📄 DementiaValuesForm: Initial data:', initialData);
+
   const { user, isAuthenticated } = useAuth();
+  console.log('👤 DementiaValuesForm: User authenticated:', isAuthenticated);
+  console.log('👤 DementiaValuesForm: User:', user);
+
   const [formData, setFormData] = useState<DementiaFormData>({
     carePreferences: {
       advancedDementiaStage: '',

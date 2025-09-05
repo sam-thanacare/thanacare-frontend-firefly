@@ -1,0 +1,132 @@
+# Frontend Debug Configuration Environment Variables
+# Copy this file to .env.local and modify as needed
+
+# =============================================================================
+# GLOBAL DEBUG SETTINGS
+# =============================================================================
+
+# Enable/disable debug logging globally
+# Set to 'true' to enable debug logging, 'false' to disable
+NEXT_PUBLIC_DEBUG_ENABLED=false
+
+# Set the minimum log level to capture
+# Options: debug, info, warn, error, silent
+# debug = all messages, info = info and above, warn = warnings and errors only, error = errors only, silent = no debug logs
+NEXT_PUBLIC_DEBUG_LEVEL=info
+
+# Enable/disable console output for debug logs
+# Set to 'true' to show debug logs in console, 'false' to disable
+NEXT_PUBLIC_DEBUG_CONSOLE=true
+
+# Enable/disable storage of debug logs in memory
+# Set to 'true' to store logs in memory for debugging, 'false' to disable
+NEXT_PUBLIC_DEBUG_STORAGE=false
+
+# Maximum number of debug logs to store in memory (only used if DEBUG_STORAGE=true)
+NEXT_PUBLIC_DEBUG_MAX_LOGS=100
+
+# =============================================================================
+# COMPONENT-SPECIFIC DEBUG SETTINGS
+# =============================================================================
+
+# Enable/disable debug logging for specific components
+# Set to 'true' to enable, 'false' to disable for that component
+
+# Member Dashboard debugging
+NEXT_PUBLIC_DEBUG_MEMBER_DASHBOARD=true
+
+# Document Detail Page debugging
+NEXT_PUBLIC_DEBUG_DOCUMENT_DETAIL=true
+
+# Dementia Values Form debugging
+NEXT_PUBLIC_DEBUG_DEMENTIA_FORM=true
+
+# API call debugging
+NEXT_PUBLIC_DEBUG_API=true
+
+# Navigation debugging
+NEXT_PUBLIC_DEBUG_NAVIGATION=true
+
+# State change debugging
+NEXT_PUBLIC_DEBUG_STATE=true
+
+# =============================================================================
+# PRODUCTION DEBUG SETTINGS
+# =============================================================================
+
+# For production environments, you might want to:
+# 1. Set NEXT_PUBLIC_DEBUG_ENABLED=false by default
+# 2. Enable specific components only when needed
+# 3. Use NEXT_PUBLIC_DEBUG_LEVEL=error to only log errors
+# 4. Set NEXT_PUBLIC_DEBUG_CONSOLE=false to avoid console spam
+# 5. Set NEXT_PUBLIC_DEBUG_STORAGE=false to avoid memory usage
+
+# Example production configuration:
+# NEXT_PUBLIC_DEBUG_ENABLED=true
+# NEXT_PUBLIC_DEBUG_LEVEL=error
+# NEXT_PUBLIC_DEBUG_CONSOLE=false
+# NEXT_PUBLIC_DEBUG_STORAGE=false
+# NEXT_PUBLIC_DEBUG_MEMBER_DASHBOARD=false
+# NEXT_PUBLIC_DEBUG_DOCUMENT_DETAIL=true
+# NEXT_PUBLIC_DEBUG_DEMENTIA_FORM=false
+# NEXT_PUBLIC_DEBUG_API=true
+# NEXT_PUBLIC_DEBUG_NAVIGATION=false
+# NEXT_PUBLIC_DEBUG_STATE=false
+
+# =============================================================================
+# DEVELOPMENT DEBUG SETTINGS
+# =============================================================================
+
+# For development environments, you might want to:
+# 1. Set NEXT_PUBLIC_DEBUG_ENABLED=true
+# 2. Use NEXT_PUBLIC_DEBUG_LEVEL=debug to see all messages
+# 3. Set NEXT_PUBLIC_DEBUG_CONSOLE=true for immediate feedback
+# 4. Set NEXT_PUBLIC_DEBUG_STORAGE=true for debugging
+
+# Example development configuration:
+# NEXT_PUBLIC_DEBUG_ENABLED=true
+# NEXT_PUBLIC_DEBUG_LEVEL=debug
+# NEXT_PUBLIC_DEBUG_CONSOLE=true
+# NEXT_PUBLIC_DEBUG_STORAGE=true
+# NEXT_PUBLIC_DEBUG_MEMBER_DASHBOARD=true
+# NEXT_PUBLIC_DEBUG_DOCUMENT_DETAIL=true
+# NEXT_PUBLIC_DEBUG_DEMENTIA_FORM=true
+# NEXT_PUBLIC_DEBUG_API=true
+# NEXT_PUBLIC_DEBUG_NAVIGATION=true
+# NEXT_PUBLIC_DEBUG_STATE=true
+
+# =============================================================================
+# TROUBLESHOOTING DEBUG SETTINGS
+# =============================================================================
+
+# When troubleshooting specific issues, you can enable only relevant components:
+
+# For document loading issues:
+# NEXT_PUBLIC_DEBUG_ENABLED=true
+# NEXT_PUBLIC_DEBUG_MEMBER_DASHBOARD=true
+# NEXT_PUBLIC_DEBUG_DOCUMENT_DETAIL=true
+# NEXT_PUBLIC_DEBUG_API=true
+# NEXT_PUBLIC_DEBUG_NAVIGATION=true
+
+# For form issues:
+# NEXT_PUBLIC_DEBUG_ENABLED=true
+# NEXT_PUBLIC_DEBUG_DEMENTIA_FORM=true
+# NEXT_PUBLIC_DEBUG_STATE=true
+
+# For API issues:
+# NEXT_PUBLIC_DEBUG_ENABLED=true
+# NEXT_PUBLIC_DEBUG_API=true
+# NEXT_PUBLIC_DEBUG_MEMBER_DASHBOARD=true
+# NEXT_PUBLIC_DEBUG_DOCUMENT_DETAIL=true
+
+# =============================================================================
+# NOTES
+# =============================================================================
+
+# 1. All frontend debug environment variables must be prefixed with NEXT_PUBLIC_
+# 2. Environment variables are loaded at build time, so changes require a rebuild
+# 3. Debug logging has minimal performance impact when disabled
+# 4. Debug logs may contain sensitive information - ensure proper access controls
+# 5. Use NEXT_PUBLIC_DEBUG_LEVEL=error in production to minimize log volume
+# 6. Component-specific flags override global settings when set to 'false'
+# 7. Debug logs are available in browser console and via window.debugLogger

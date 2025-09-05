@@ -26,6 +26,7 @@ import {
   BookOpen,
   Settings,
 } from 'lucide-react';
+import { debugLogger } from '@/lib/utils/debugLogger';
 
 interface Assignment {
   id: string;
@@ -55,7 +56,19 @@ export function MemberDashboard() {
   // Load real assignments from API
   useEffect(() => {
     const loadAssignments = async () => {
-      if (!user?.id) return;
+      debugLogger.info('MemberDashboard', 'Starting to load assignments');
+      debugLogger.info('MemberDashboard', 'User ID', { userId: user?.id });
+      debugLogger.info('MemberDashboard', 'Token exists', {
+        hasToken: !!token,
+      });
+
+      if (!user?.id) {
+        debugLogger.warn(
+          'MemberDashboard',
+          'No user ID, skipping assignment load'
+        );
+        return;
+      }
 
       try {
         setIsLoading(true);
@@ -63,10 +76,21 @@ export function MemberDashboard() {
         const backendUrl =
           process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
 
+        console.log('🌐 MemberDashboard: Backend URL:', backendUrl);
+
         if (!token) {
-          console.error('No authentication token found');
+          console.error('❌ MemberDashboard: No authentication token found');
           throw new Error('Authentication required');
         }
+
+        console.log(
+          '📡 MemberDashboard: Making API call to:',
+          `${backendUrl}/api/dementia-tool/my-assignments`
+        );
+        console.log(
+          '🔐 MemberDashboard: Using token (first 20 chars):',
+          token.substring(0, 20) + '...'
+        );
 
         const response = await fetch(
           `${backendUrl}/api/dementia-tool/my-assignments`,
@@ -78,20 +102,39 @@ export function MemberDashboard() {
           }
         );
 
+        console.log(
+          '📊 MemberDashboard: API Response status:',
+          response.status
+        );
+        console.log(
+          '📊 MemberDashboard: API Response headers:',
+          Object.fromEntries(response.headers.entries())
+        );
+
         if (!response.ok) {
           const errorText = await response.text();
-          console.error('API Error:', response.status, errorText);
+          console.error(
+            '❌ MemberDashboard: API Error:',
+            response.status,
+            errorText
+          );
           throw new Error(
             `Failed to load assignments: ${response.status} ${response.statusText}`
           );
         }
 
         const data = await response.json();
+        console.log('📦 MemberDashboard: Raw API response:', data);
+
         const assignmentsData = data.data || data;
+        console.log('📋 MemberDashboard: Assignments data:', assignmentsData);
 
         // Ensure assignmentsData is an array before calling map
         if (!Array.isArray(assignmentsData)) {
-          console.warn('Assignments data is not an array:', assignmentsData);
+          console.warn(
+            '⚠️ MemberDashboard: Assignments data is not an array:',
+            assignmentsData
+          );
           setAssignments([]);
           setStats({
             total: 0,
@@ -104,6 +147,7 @@ export function MemberDashboard() {
         }
 
         // Transform API data to component format
+        console.log('🔄 MemberDashboard: Transforming assignments data...');
         const transformedAssignments: Assignment[] = assignmentsData.map(
           (assignment: {
             assignment: {
@@ -122,18 +166,28 @@ export function MemberDashboard() {
             trainer: {
               name: string;
             };
-          }) => ({
-            id: assignment.assignment.id,
-            documentTitle: assignment.document.title,
-            status: assignment.assignment.status,
-            progress: assignment.response?.progress || 0,
-            assignedAt: assignment.assignment.assigned_at,
-            dueDate: assignment.assignment.due_date,
-            notes: assignment.assignment.notes,
-            trainerName: assignment.trainer.name,
-          })
+          }) => {
+            console.log(
+              '📝 MemberDashboard: Processing assignment:',
+              assignment
+            );
+            return {
+              id: assignment.assignment.id,
+              documentTitle: assignment.document.title,
+              status: assignment.assignment.status,
+              progress: assignment.response?.progress || 0,
+              assignedAt: assignment.assignment.assigned_at,
+              dueDate: assignment.assignment.due_date,
+              notes: assignment.assignment.notes,
+              trainerName: assignment.trainer.name,
+            };
+          }
         );
 
+        console.log(
+          '✅ MemberDashboard: Transformed assignments:',
+          transformedAssignments
+        );
         setAssignments(transformedAssignments);
 
         // Calculate stats
@@ -150,9 +204,22 @@ export function MemberDashboard() {
         const overallProgress =
           total > 0 ? Math.round((completed / total) * 100) : 0;
 
+        console.log('📊 MemberDashboard: Calculated stats:', {
+          total,
+          completed,
+          inProgress,
+          assigned,
+          overallProgress,
+        });
         setStats({ total, completed, inProgress, assigned, overallProgress });
+        console.log('✅ MemberDashboard: Successfully loaded assignments');
       } catch (error) {
-        console.error('Error loading assignments:', error);
+        console.error('❌ MemberDashboard: Error loading assignments:', error);
+        console.error('❌ MemberDashboard: Error details:', {
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+          name: error instanceof Error ? error.name : undefined,
+        });
         setError(
           error instanceof Error ? error.message : 'Failed to load assignments'
         );
@@ -166,6 +233,7 @@ export function MemberDashboard() {
           overallProgress: 0,
         });
       } finally {
+        console.log('🏁 MemberDashboard: Assignment loading completed');
         setIsLoading(false);
       }
     };
@@ -386,9 +454,25 @@ export function MemberDashboard() {
                     ) : (
                       <Button
                         size="sm"
-                        onClick={() =>
-                          router.push(`/member/documents/${assignment.id}`)
-                        }
+                        onClick={() => {
+                          console.log(
+                            '🚀 MemberDashboard: Start/Continue button clicked'
+                          );
+                          console.log(
+                            '📄 MemberDashboard: Assignment details:',
+                            {
+                              id: assignment.id,
+                              title: assignment.documentTitle,
+                              status: assignment.status,
+                              progress: assignment.progress,
+                            }
+                          );
+                          console.log(
+                            '🔗 MemberDashboard: Navigating to:',
+                            `/member/documents/${assignment.id}`
+                          );
+                          router.push(`/member/documents/${assignment.id}`);
+                        }}
                       >
                         {assignment.status === 'assigned' ? (
                           <>
