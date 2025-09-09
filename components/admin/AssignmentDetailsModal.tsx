@@ -149,8 +149,15 @@ export function AssignmentDetailsModal({
         onAssignmentDeleted();
         onClose();
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete assignment');
+        let errorMessage = 'Failed to delete assignment';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch {
+          // If JSON parsing fails, use the status text or a generic message
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error('Error deleting assignment:', error);
@@ -338,12 +345,6 @@ export function AssignmentDetailsModal({
                   <span className="font-medium">Family ID:</span>{' '}
                   <span className="text-muted-foreground">
                     {assignment.family?.id}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-medium">Organization ID:</span>{' '}
-                  <span className="text-muted-foreground">
-                    {assignment.family?.organization_id}
                   </span>
                 </div>
               </div>

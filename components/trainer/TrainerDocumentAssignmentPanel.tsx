@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Plus, Search, FileText } from 'lucide-react';
+import { Plus, Search, FileText, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AssignmentDetailsModal } from '@/components/admin/AssignmentDetailsModal';
 
@@ -93,7 +93,9 @@ export function TrainerDocumentAssignmentPanel() {
   const [assigning, setAssigning] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
-  const [copiedUUID, setCopiedUUID] = useState<string | null>(null);
+  const [deletingAssignmentId, setDeletingAssignmentId] = useState<
+    string | null
+  >(null);
   const [selectedAssignment, setSelectedAssignment] =
     useState<AssignmentWithDetails | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
@@ -255,15 +257,43 @@ export function TrainerDocumentAssignmentPanel() {
     setNotes('');
   };
 
-  const copyToClipboard = async (text: string) => {
+  const handleDeleteAssignment = async (assignmentId: string) => {
+    if (
+      !confirm(
+        'Are you sure you want to delete this assignment? This action cannot be undone.'
+      )
+    ) {
+      return;
+    }
+
     try {
-      await navigator.clipboard.writeText(text);
-      setCopiedUUID(text);
-      toast.success('UUID copied to clipboard');
-      setTimeout(() => setCopiedUUID(null), 2000);
+      setDeletingAssignmentId(assignmentId);
+
+      const response = await fetch(
+        `${backendUrl}/api/dementia-tool/assignments/${assignmentId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (response.ok) {
+        toast.success('Assignment deleted successfully');
+        fetchData(); // Refresh the assignments list
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete assignment');
+      }
     } catch (error) {
-      console.error('Failed to copy to clipboard:', error);
-      toast.error('Failed to copy UUID');
+      console.error('Error deleting assignment:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to delete assignment'
+      );
+    } finally {
+      setDeletingAssignmentId(null);
     }
   };
 
@@ -556,12 +586,24 @@ export function TrainerDocumentAssignmentPanel() {
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            copyToClipboard(assignment.assignment.id);
+                            handleDeleteAssignment(assignment.assignment.id);
                           }}
+                          disabled={
+                            deletingAssignmentId === assignment.assignment.id
+                          }
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
                         >
-                          {copiedUUID === assignment.assignment.id
-                            ? 'Copied!'
-                            : 'Copy ID'}
+                          {deletingAssignmentId === assignment.assignment.id ? (
+                            <>
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-600 mr-2"></div>
+                              Deleting...
+                            </>
+                          ) : (
+                            <>
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Delete
+                            </>
+                          )}
                         </Button>
                       </div>
                     </TableCell>
