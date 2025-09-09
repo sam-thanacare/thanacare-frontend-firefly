@@ -124,12 +124,13 @@ export function TrainerDocumentAssignmentPanel() {
       if (membersResponse.ok) {
         const membersData = await membersResponse.json();
         const memberUsers = membersData.data || [];
+        console.log('Fetched members:', memberUsers);
         setMembers(memberUsers);
       }
 
       // Fetch documents
       const documentsResponse = await fetch(
-        `${backendUrl}/dementia-tool/document`,
+        `${backendUrl}/dementia-tool/documents`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -139,7 +140,8 @@ export function TrainerDocumentAssignmentPanel() {
 
       if (documentsResponse.ok) {
         const documentData = await documentsResponse.json();
-        setDocuments([documentData.data]);
+        console.log('Fetched documents:', documentData.data);
+        setDocuments(documentData.data || []);
       }
 
       // Fetch trainer's assignments
@@ -245,6 +247,8 @@ export function TrainerDocumentAssignmentPanel() {
   };
 
   const resetForm = () => {
+    console.log('Resetting form, current members:', members);
+    console.log('Current documents:', documents);
     setSelectedMember('');
     setSelectedDocument('');
     setDueDate('');

@@ -290,6 +290,10 @@ export default function LoginPage() {
         console.log('Setting redirect to /member');
         setRedirectPath('/member');
         setShouldRedirect(true);
+      } else if (user.role === 'trainer') {
+        console.log('Setting redirect to /trainer');
+        setRedirectPath('/trainer');
+        setShouldRedirect(true);
       } else {
         console.log('Setting redirect to /guest');
         setRedirectPath('/guest');
