@@ -12,7 +12,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@/components/ui/select';
 import {
   Table,
@@ -102,7 +101,9 @@ export function TrainerDocumentAssignmentPanel() {
 
   // Form state
   const [selectedMember, setSelectedMember] = useState('');
+  const [selectedMemberDisplay, setSelectedMemberDisplay] = useState('');
   const [selectedDocument, setSelectedDocument] = useState('');
+  const [selectedDocumentDisplay, setSelectedDocumentDisplay] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [notes, setNotes] = useState('');
 
@@ -248,11 +249,33 @@ export function TrainerDocumentAssignmentPanel() {
     }
   };
 
+  const handleMemberSelection = (memberId: string) => {
+    setSelectedMember(memberId);
+    const member = members.find((m) => m.id === memberId);
+    if (member) {
+      setSelectedMemberDisplay(`${member.name} (${member.email})`);
+    } else {
+      setSelectedMemberDisplay('');
+    }
+  };
+
+  const handleDocumentSelection = (documentId: string) => {
+    setSelectedDocument(documentId);
+    const document = documents.find((d) => d.id === documentId);
+    if (document) {
+      setSelectedDocumentDisplay(`${document.title} (v${document.version})`);
+    } else {
+      setSelectedDocumentDisplay('');
+    }
+  };
+
   const resetForm = () => {
     console.log('Resetting form, current members:', members);
     console.log('Current documents:', documents);
     setSelectedMember('');
+    setSelectedMemberDisplay('');
     setSelectedDocument('');
+    setSelectedDocumentDisplay('');
     setDueDate('');
     setNotes('');
   };
@@ -369,10 +392,12 @@ export function TrainerDocumentAssignmentPanel() {
                 </Label>
                 <Select
                   value={selectedMember}
-                  onValueChange={setSelectedMember}
+                  onValueChange={handleMemberSelection}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a member" />
+                    <span className="block truncate">
+                      {selectedMemberDisplay || 'Select a member'}
+                    </span>
                   </SelectTrigger>
                   <SelectContent>
                     {members.map((member) => (
@@ -390,10 +415,12 @@ export function TrainerDocumentAssignmentPanel() {
                 </Label>
                 <Select
                   value={selectedDocument}
-                  onValueChange={setSelectedDocument}
+                  onValueChange={handleDocumentSelection}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a document" />
+                    <span className="block truncate">
+                      {selectedDocumentDisplay || 'Select a document'}
+                    </span>
                   </SelectTrigger>
                   <SelectContent>
                     {documents.map((doc) => (

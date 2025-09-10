@@ -26,7 +26,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -70,6 +69,8 @@ export default function TrainerDashboard() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMember, setSelectedMember] = useState<string>('');
+  const [selectedMemberDisplay, setSelectedMemberDisplay] =
+    useState<string>('');
   const [dueDate, setDueDate] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
 
@@ -222,6 +223,16 @@ export default function TrainerDashboard() {
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString();
+  };
+
+  const handleMemberSelection = (memberId: string) => {
+    setSelectedMember(memberId);
+    const member = memberProgress.find((m) => m.memberId === memberId);
+    if (member) {
+      setSelectedMemberDisplay(`${member.memberName} - ${member.familyName}`);
+    } else {
+      setSelectedMemberDisplay('');
+    }
   };
 
   const calculateOverallStats = () => {
@@ -513,10 +524,12 @@ export default function TrainerDashboard() {
                     <Label htmlFor="member-select">Select Family Member</Label>
                     <Select
                       value={selectedMember}
-                      onValueChange={setSelectedMember}
+                      onValueChange={handleMemberSelection}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a member..." />
+                        <span className="block truncate">
+                          {selectedMemberDisplay || 'Select a member...'}
+                        </span>
                       </SelectTrigger>
                       <SelectContent>
                         {memberProgress.map((member) => (
