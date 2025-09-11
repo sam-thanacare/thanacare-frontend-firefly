@@ -31,6 +31,7 @@ import {
   Building2,
   Users2,
 } from 'lucide-react';
+import { CreateAdminUserForm } from './CreateAdminUserForm';
 
 interface User {
   id: string;
@@ -396,6 +397,7 @@ export function UsersTable() {
               {filteredUsers.length === 1 ? 'user' : 'users'}
             </span>
           </div>
+          <CreateAdminUserForm onUserCreated={fetchUsers} />
         </div>
       </div>
 

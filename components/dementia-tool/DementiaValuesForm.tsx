@@ -16,7 +16,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Switch } from '@/components/ui/switch';
 import {
   Heart,
   Shield,
@@ -35,6 +34,7 @@ import {
   DementiaDocumentTemplate,
   DementiaResponse,
 } from '@/lib/services/dementiaToolService';
+import { isAutoSaveEnabled } from '@/lib/config/features';
 import { toast } from 'sonner';
 
 interface CarePreferences {
@@ -202,7 +202,8 @@ export default function DementiaValuesForm({
   const [sectionProgress, setSectionProgress] = useState<number[]>([
     0, 0, 0, 0,
   ]);
-  const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
+  // Use feature flag instead of user preference
+  const autoSaveEnabled = isAutoSaveEnabled();
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   // Use ref to store latest form data to avoid dependency issues
@@ -275,10 +276,7 @@ export default function DementiaValuesForm({
           }
         }
 
-        // Load auto-save preference
-        if (initialData.response.auto_save_enabled !== undefined) {
-          setAutoSaveEnabled(initialData.response.auto_save_enabled);
-        }
+        // Auto-save preference is now controlled by feature flag
 
         // Load last saved timestamp
         if (initialData.response.last_saved_at) {
@@ -925,22 +923,7 @@ export default function DementiaValuesForm({
               </div>
             </div>
 
-            {/* Auto-save toggle */}
-            <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-              <div className="space-y-1">
-                <Label htmlFor="auto-save" className="text-sm font-medium">
-                  Auto-save Progress
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  Automatically save your progress as you fill out the form
-                </p>
-              </div>
-              <Switch
-                id="auto-save"
-                checked={autoSaveEnabled}
-                onCheckedChange={setAutoSaveEnabled}
-              />
-            </div>
+            {/* Auto-save is now controlled by feature flag */}
           </div>
         </CardContent>
       </Card>
