@@ -25,6 +25,7 @@ import {
 import { TrainerFamiliesTable } from '@/components/trainer/TrainerFamiliesTable';
 import { TrainerDocumentAssignmentPanel } from '@/components/trainer/TrainerDocumentAssignmentPanel';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { useAuthState } from '@/lib/hooks/useAuthState';
 
 export default function TrainerDashboard() {
   const router = useRouter();
@@ -33,6 +34,7 @@ export default function TrainerDashboard() {
     (state) => state.auth
   );
   const { refreshUserProfile } = useAuth();
+  const { isTokenReady, makeAuthenticatedCall } = useAuthState();
   const [activeTab, setActiveTab] = useState('families');
   const [stats, setStats] = useState({
     totalFamilies: 0,
@@ -60,7 +62,7 @@ export default function TrainerDashboard() {
 
   // Fetch dashboard statistics
   const fetchStats = useCallback(async () => {
-    if (!token) return;
+    if (!isTokenReady || !token) return;
 
     try {
       setStatsLoading(true);
@@ -68,11 +70,8 @@ export default function TrainerDashboard() {
         process.env.NEXT_PUBLIC_THANACARE_BACKEND || 'http://localhost:8080';
 
       // Fetch assignments data to calculate all metrics
-      const assignmentsResponse = await fetch(
-        `${backendUrl}/api/dementia-tool/my-assignments`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      const assignmentsResponse = await makeAuthenticatedCall(
+        `${backendUrl}/api/dementia-tool/my-assignments`
       );
 
       let totalFamilies = 0;
@@ -146,11 +145,14 @@ export default function TrainerDashboard() {
     } finally {
       setStatsLoading(false);
     }
-  }, [token]);
+  }, [isTokenReady, token, makeAuthenticatedCall]);
 
   useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
+    // Only fetch stats when token is ready and available
+    if (isTokenReady && token) {
+      fetchStats();
+    }
+  }, [isTokenReady, token, fetchStats]);
 
   const handleLogout = () => {
     dispatch(logout()); // This will also clear stored tokens via middleware
