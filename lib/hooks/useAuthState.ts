@@ -20,11 +20,8 @@ export function useAuthState() {
   // Update token readiness
   useEffect(() => {
     if (hasValidToken && !isTokenReady) {
-      // Small delay to ensure token is fully processed
-      const timer = setTimeout(() => {
-        setIsTokenReady(true);
-      }, 50);
-      return () => clearTimeout(timer);
+      // Immediate readiness check - no artificial delay
+      setIsTokenReady(true);
     } else if (!hasValidToken && isTokenReady) {
       setIsTokenReady(false);
     }
@@ -64,8 +61,18 @@ export function useAuthState() {
   const makeAuthenticatedCall = useCallback(
     async (url: string, options: RequestInit = {}): Promise<Response> => {
       if (!isTokenReady || !token) {
+        console.error('makeAuthenticatedCall: Token not ready', {
+          isTokenReady,
+          hasToken: !!token,
+          tokenLength: token?.length,
+        });
         throw new Error('Token not ready for API call');
       }
+
+      console.log('makeAuthenticatedCall: Making request to', url, {
+        hasToken: !!token,
+        tokenPreview: token?.substring(0, 20) + '...',
+      });
 
       return fetch(url, {
         ...options,
