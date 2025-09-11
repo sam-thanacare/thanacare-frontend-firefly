@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAppSelector } from '@/lib/store/hooks';
+import { useAuthState } from '@/lib/hooks/useAuthState';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -71,7 +71,7 @@ interface FamilyMember {
 }
 
 export function TrainerFamiliesTable() {
-  const { token } = useAppSelector((state) => state.auth);
+  const { token, isTokenReady, makeAuthenticatedCall } = useAuthState();
   const [families, setFamilies] = useState<Family[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,15 +93,13 @@ export function TrainerFamiliesTable() {
 
   // Fetch families
   const fetchFamilies = useCallback(async () => {
-    if (!token) return;
+    if (!isTokenReady || !token) return;
 
     try {
       setLoading(true);
-      const response = await fetch(`${backendUrl}/api/families`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await makeAuthenticatedCall(
+        `${backendUrl}/api/families`
+      );
 
       if (!response.ok) {
         throw new Error('Failed to fetch families');
@@ -114,13 +112,8 @@ export function TrainerFamiliesTable() {
       const familiesWithMemberCount = await Promise.all(
         data.map(async (family) => {
           try {
-            const membersResponse = await fetch(
-              `${backendUrl}/api/families/${family.id}/members`,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
+            const membersResponse = await makeAuthenticatedCall(
+              `${backendUrl}/api/families/${family.id}/members`
             );
 
             if (membersResponse.ok) {
@@ -146,18 +139,16 @@ export function TrainerFamiliesTable() {
     } finally {
       setLoading(false);
     }
-  }, [token, backendUrl]);
+  }, [isTokenReady, token, makeAuthenticatedCall, backendUrl]);
 
   // Fetch organizations for the dropdown
   const fetchOrganizations = useCallback(async () => {
-    if (!token) return;
+    if (!isTokenReady || !token) return;
 
     try {
-      const response = await fetch(`${backendUrl}/api/organizations`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await makeAuthenticatedCall(
+        `${backendUrl}/api/organizations`
+      );
 
       if (!response.ok) {
         throw new Error('Failed to fetch organizations');
@@ -170,12 +161,15 @@ export function TrainerFamiliesTable() {
       console.error('Error fetching organizations:', error);
       toast.error('Failed to fetch organizations');
     }
-  }, [token, backendUrl]);
+  }, [isTokenReady, token, makeAuthenticatedCall, backendUrl]);
 
   useEffect(() => {
-    fetchFamilies();
-    fetchOrganizations();
-  }, [fetchFamilies, fetchOrganizations]);
+    // Only fetch data when token is ready and available
+    if (isTokenReady && token) {
+      fetchFamilies();
+      fetchOrganizations();
+    }
+  }, [isTokenReady, token, fetchFamilies, fetchOrganizations]);
 
   const resetForm = () => {
     setFormData({ name: '', organization_id: '' });
