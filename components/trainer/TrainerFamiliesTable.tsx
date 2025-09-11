@@ -93,16 +93,42 @@ export function TrainerFamiliesTable() {
 
   // Fetch families
   const fetchFamilies = useCallback(async () => {
-    if (!isTokenReady || !token) return;
+    if (!isTokenReady || !token) {
+      console.log(
+        'TrainerFamiliesTable - fetchFamilies: Token not ready or missing'
+      );
+      return;
+    }
 
     try {
       setLoading(true);
+      console.log(
+        'TrainerFamiliesTable - fetchFamilies: Making API call to /api/families'
+      );
       const response = await makeAuthenticatedCall(
         `${backendUrl}/api/families`
       );
 
       if (!response.ok) {
-        throw new Error('Failed to fetch families');
+        const errorText = await response.text();
+        let errorMessage = 'Failed to fetch families';
+
+        if (response.status === 401) {
+          errorMessage = 'Authentication failed. Please log in again.';
+        } else if (response.status === 403) {
+          errorMessage =
+            'Access denied. You do not have permission to view families.';
+        } else if (response.status === 500) {
+          errorMessage = 'Server error. Please try again later.';
+        }
+
+        console.error('API Error:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText,
+        });
+
+        throw new Error(errorMessage);
       }
 
       const responseData = await response.json();
@@ -143,15 +169,41 @@ export function TrainerFamiliesTable() {
 
   // Fetch organizations for the dropdown
   const fetchOrganizations = useCallback(async () => {
-    if (!isTokenReady || !token) return;
+    if (!isTokenReady || !token) {
+      console.log(
+        'TrainerFamiliesTable - fetchOrganizations: Token not ready or missing'
+      );
+      return;
+    }
 
     try {
+      console.log(
+        'TrainerFamiliesTable - fetchOrganizations: Making API call to /api/organizations'
+      );
       const response = await makeAuthenticatedCall(
         `${backendUrl}/api/organizations`
       );
 
       if (!response.ok) {
-        throw new Error('Failed to fetch organizations');
+        const errorText = await response.text();
+        let errorMessage = 'Failed to fetch organizations';
+
+        if (response.status === 401) {
+          errorMessage = 'Authentication failed. Please log in again.';
+        } else if (response.status === 403) {
+          errorMessage =
+            'Access denied. You do not have permission to view organizations.';
+        } else if (response.status === 500) {
+          errorMessage = 'Server error. Please try again later.';
+        }
+
+        console.error('Organizations API Error:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText,
+        });
+
+        throw new Error(errorMessage);
       }
 
       const responseData = await response.json();
