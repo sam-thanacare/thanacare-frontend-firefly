@@ -2,6 +2,14 @@
 # Copy this file to .env.local and modify as needed
 
 # =============================================================================
+# FEATURE FLAGS
+# =============================================================================
+
+# Enable/disable auto-save functionality for dementia tool documents
+# Set to 'true' to enable auto-save, 'false' to disable (default: true)
+NEXT_PUBLIC_AUTO_SAVE_ENABLED=true
+
+# =============================================================================
 # GLOBAL DEBUG SETTINGS
 # =============================================================================
 
