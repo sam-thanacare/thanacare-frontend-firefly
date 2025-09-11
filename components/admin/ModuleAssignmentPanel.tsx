@@ -103,6 +103,7 @@ export function ModuleAssignmentPanel() {
   // Form state
   const [selectedMember, setSelectedMember] = useState('');
   const [selectedDocument, setSelectedDocument] = useState('');
+  const [selectedDocumentDisplay, setSelectedDocumentDisplay] = useState('');
   const [selectedTrainer, setSelectedTrainer] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [notes, setNotes] = useState('');
@@ -221,6 +222,16 @@ export function ModuleAssignmentPanel() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const handleDocumentSelection = (documentId: string) => {
+    setSelectedDocument(documentId);
+    const document = documents.find((d) => d.id === documentId);
+    if (document) {
+      setSelectedDocumentDisplay(`${document.title} (v${document.version})`);
+    } else {
+      setSelectedDocumentDisplay('');
+    }
+  };
 
   const handleAssignDocument = async () => {
     if (!selectedMember || !selectedDocument || !selectedTrainer) {
@@ -347,6 +358,7 @@ export function ModuleAssignmentPanel() {
         // Reset form
         setSelectedMember('');
         setSelectedDocument('');
+        setSelectedDocumentDisplay('');
         setSelectedTrainer('');
         setDueDate('');
         setNotes('');
@@ -582,10 +594,12 @@ export function ModuleAssignmentPanel() {
               <Label htmlFor="document">Document *</Label>
               <Select
                 value={selectedDocument}
-                onValueChange={setSelectedDocument}
+                onValueChange={handleDocumentSelection}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a document" />
+                  <span className="block truncate">
+                    {selectedDocumentDisplay || 'Select a document'}
+                  </span>
                 </SelectTrigger>
                 <SelectContent>
                   {documents.length > 0 ? (
