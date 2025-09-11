@@ -1,55 +1,163 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ThemeToggle } from '@/components/theme-toggle';
 import Link from 'next/link';
 import Image from 'next/image';
-import {
-  Users,
-  Heart,
-  Shield,
-  Stethoscope,
-  ArrowRight,
-  CheckCircle,
-} from 'lucide-react';
+import { BookOpen, FileText, Users, Play, ExternalLink } from 'lucide-react';
+
+interface ChecklistItem {
+  id: string;
+  title: string;
+  completed: boolean;
+  link?: string;
+}
+
+interface Section {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  items: ChecklistItem[];
+}
 
 export default function GuestPage() {
-  const features = [
+  const [sections, setSections] = useState<Section[]>([
     {
-      icon: <Heart className="h-6 w-6 text-red-500" />,
-      title: 'Compassionate Care',
+      id: 'education',
+      title: 'Education',
       description:
-        'Supporting families and healthcare providers with empathy and understanding.',
+        'Understanding care options Determining values and priorities',
+      icon: BookOpen,
+      items: [
+        {
+          id: 'eol-checklist',
+          title: 'End-of-Life Planning Checklists',
+          completed: false,
+        },
+        { id: 'disease-decoder', title: 'Disease Decoder', completed: false },
+        {
+          id: 'esrd-guide',
+          title: 'ESRD - What Does It Mean For ME?',
+          completed: false,
+        },
+        {
+          id: 'cancer-guide',
+          title: 'Cancer - What Does It Mean For ME?',
+          completed: false,
+        },
+        {
+          id: 'copd-guide',
+          title: 'COPD - What Does It Mean For ME?',
+          completed: false,
+        },
+        {
+          id: 'maid-handbook',
+          title: 'Medical Aid In Dying Handbook',
+          completed: false,
+        },
+        {
+          id: 'vsed-handbook',
+          title: 'Voluntary Stop Eating and Drinking Handbook',
+          completed: false,
+        },
+      ],
     },
     {
-      icon: <Shield className="h-6 w-6 text-blue-500" />,
-      title: 'Secure & Private',
+      id: 'document-completion',
+      title: 'Document Completion',
       description:
-        'Your health information is protected with enterprise-grade security.',
+        'Identifying and educating a healthcare proxy Completing advance directives Making dementia-specific care plans',
+      icon: FileText,
+      items: [
+        {
+          id: 'dementia-values',
+          title: 'Dementia Values & Priorities',
+          completed: false,
+          link: '/dementia-tool-demo',
+        },
+        {
+          id: 'advance-directives',
+          title: 'Advance Directives (state-specific forms)',
+          completed: false,
+        },
+        {
+          id: 'sectarian-directive',
+          title: 'Sectarian Healthcare Directive',
+          completed: false,
+        },
+        {
+          id: 'visitation-auth',
+          title: 'Hospital Visitation Authorization',
+          completed: false,
+        },
+        {
+          id: 'lgbtq-planning',
+          title: 'LGBTQ+ advance care planning',
+          completed: false,
+        },
+        {
+          id: 'healthcare-agent',
+          title: 'Name My Healthcare Agent',
+          completed: false,
+        },
+      ],
     },
     {
-      icon: <Users className="h-6 w-6 text-green-500" />,
-      title: 'Family Focused',
+      id: 'care-team',
+      title: 'Aligning Your Care Team',
       description:
-        'Tools and resources designed specifically for family caregiving needs.',
+        'Share your Documents Facilitating conversations with loved ones and doctors',
+      icon: Users,
+      items: [
+        {
+          id: 'compassion-legal',
+          title: 'Connect with Compassion Legal',
+          completed: false,
+        },
+        {
+          id: 'life-therapies',
+          title: 'My Particular Wishes for Therapies That Could Sustain Life',
+          completed: false,
+        },
+        {
+          id: 'provider-letter',
+          title: 'End-of-Life Wishes Letter to Medical Providers',
+          completed: false,
+        },
+        {
+          id: 'primary-care',
+          title: 'Share with my Primary Care Provider',
+          completed: false,
+        },
+        {
+          id: 'family-share',
+          title: 'Share with my Family and Loved Ones',
+          completed: false,
+        },
+      ],
     },
-    {
-      icon: <Stethoscope className="h-6 w-6 text-purple-500" />,
-      title: 'Healthcare Integration',
-      description: 'Seamlessly connect with healthcare providers and services.',
-    },
-  ];
+  ]);
 
-  const benefits = [
-    'Access to educational resources',
-    'Family support community',
-    'Healthcare provider directory',
-    'Care planning tools',
-    'Emergency contact management',
-    'Appointment scheduling',
-  ];
+  const handleItemToggle = (sectionId: string, itemId: string) => {
+    setSections((prevSections) =>
+      prevSections.map((section) =>
+        section.id === sectionId
+          ? {
+              ...section,
+              items: section.items.map((item) =>
+                item.id === itemId
+                  ? { ...item, completed: !item.completed }
+                  : item
+              ),
+            }
+          : section
+      )
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -80,173 +188,117 @@ export default function GuestPage() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center">
-            <Badge variant="secondary" className="mb-4">
-              Welcome to Thanacare
-            </Badge>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-              Your Healthcare
-              <span className="text-blue-600 dark:text-blue-400">
-                {' '}
-                Companion
-              </span>
-            </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-              Discover comprehensive healthcare support designed for families,
-              caregivers, and healthcare professionals. Join our community of
-              compassionate care providers.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/login">
-                <Button size="lg" className="w-full sm:w-auto">
-                  Get Started
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                Learn More
-              </Button>
-            </div>
-          </div>
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Welcome Section */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+            Welcome!
+          </h1>
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto">
+            Compassion and Choices&apos;s Healthcare Planning Platform is Your
+            Roadmap to Empowerment. Below are options you may select from to
+            help communicate your wishes regarding future care.
+          </p>
         </div>
-      </section>
 
-      {/* Features Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white/50 dark:bg-gray-800/50">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Why Choose Thanacare?
-            </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              We&apos;re committed to providing exceptional healthcare support
-              with features designed around your needs.
-            </p>
-          </div>
+        {/* Three Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+          {sections.map((section) => {
+            const IconComponent = section.icon;
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
-              <Card
-                key={index}
-                className="text-center border-0 shadow-lg hover:shadow-xl transition-shadow"
-              >
-                <CardHeader>
-                  <div className="mx-auto mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-full w-fit">
-                    {feature.icon}
+            return (
+              <Card key={section.id} className="h-fit">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                      <IconComponent className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <CardTitle className="text-xl">{section.title}</CardTitle>
                   </div>
-                  <CardTitle className="text-lg">{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    {feature.description}
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {section.description}
                   </p>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {section.items.map((item) => (
+                    <div key={item.id} className="flex items-start space-x-3">
+                      <Checkbox
+                        id={item.id}
+                        checked={item.completed}
+                        onCheckedChange={() =>
+                          handleItemToggle(section.id, item.id)
+                        }
+                        className="mt-1"
+                      />
+                      <label
+                        htmlFor={item.id}
+                        className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer flex-1"
+                      >
+                        {item.title}
+                      </label>
+                      {item.link && (
+                        <Link href={item.link}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
+                  ))}
                 </CardContent>
               </Card>
-            ))}
-          </div>
+            );
+          })}
         </div>
-      </section>
 
-      {/* Benefits Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-6">
-                Everything You Need for Better Healthcare
-              </h2>
-              <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
-                Access comprehensive tools and resources designed to support
-                your healthcare journey.
-              </p>
-
-              <div className="space-y-4">
-                {benefits.map((benefit, index) => (
-                  <div key={index} className="flex items-center space-x-3">
-                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      {benefit}
-                    </span>
-                  </div>
-                ))}
+        {/* Dementia Tool Tour Section */}
+        <Card className="mb-12 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-200 dark:border-blue-800">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <div className="flex items-center justify-center space-x-3 mb-4">
+                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
+                  <Play className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Take a Tour of the Dementia Tool
+                </h2>
               </div>
-
-              <div className="mt-8">
-                <Link href="/login">
-                  <Button size="lg">
-                    Start Your Journey
-                    <ArrowRight className="ml-2 h-4 w-4" />
+              <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
+                Experience our comprehensive Dementia Values & Priorities tool
+                that helps you communicate your wishes for future care. This
+                interactive demo will guide you through the process step by
+                step.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link href="/dementia-tool-demo">
+                  <Button size="lg" className="w-full sm:w-auto">
+                    <Play className="mr-2 h-4 w-4" />
+                    Start Dementia Tool Tour
+                  </Button>
+                </Link>
+                <Link href="/member-view-demo">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full sm:w-auto"
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    View Member Experience
                   </Button>
                 </Link>
               </div>
             </div>
-
-            <div className="relative">
-              <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-8 text-white">
-                <h3 className="text-2xl font-bold mb-4">Join Our Community</h3>
-                <p className="mb-6 opacity-90">
-                  Connect with thousands of families and healthcare
-                  professionals who trust Thanacare for their healthcare needs.
-                </p>
-                <div className="flex items-center space-x-4">
-                  <div className="flex -space-x-2">
-                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-sm font-semibold">
-                      1
-                    </div>
-                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-sm font-semibold">
-                      2
-                    </div>
-                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-sm font-semibold">
-                      +
-                    </div>
-                  </div>
-                  <span className="text-sm opacity-90">
-                    Active users worldwide
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-blue-600 dark:bg-blue-700">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            Ready to Get Started?
-          </h2>
-          <p className="text-xl text-blue-100 mb-8">
-            Create your account today and join a community dedicated to
-            compassionate healthcare.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/login">
-              <Button
-                size="lg"
-                variant="secondary"
-                className="w-full sm:w-auto"
-              >
-                Create Account
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-            <Button
-              size="lg"
-              variant="outline"
-              className="w-full sm:w-auto bg-transparent border-white text-white hover:bg-white hover:text-blue-600"
-            >
-              Explore Features
-            </Button>
-          </div>
-        </div>
-      </section>
+          </CardContent>
+        </Card>
+      </main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8">
+      <footer className="bg-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8 mt-20">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-4 mb-4 md:mb-0">
@@ -260,7 +312,7 @@ export default function GuestPage() {
               <span className="text-lg font-semibold">Thanacare</span>
             </div>
             <p className="text-gray-400 text-center md:text-right">
-              © 2024 Thanacare. Compassionate healthcare for everyone.
+              © 2025 Thanacare. Compassionate healthcare for everyone.
             </p>
           </div>
         </div>
