@@ -351,10 +351,10 @@ export default function TrainerDashboard() {
                         <CardTitle className="text-sm font-medium">
                           Completed
                         </CardTitle>
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CheckCircle className="h-4 w-4 text-primary" />
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold text-green-600">
+                        <div className="text-2xl font-bold text-primary">
                           {stats.completedAssignments}
                         </div>
                         <p className="text-xs text-muted-foreground">
@@ -367,10 +367,10 @@ export default function TrainerDashboard() {
                         <CardTitle className="text-sm font-medium">
                           In Progress
                         </CardTitle>
-                        <Clock className="h-4 w-4 text-blue-600" />
+                        <Clock className="h-4 w-4 text-accent" />
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold text-blue-600">
+                        <div className="text-2xl font-bold text-accent">
                           {stats.inProgressAssignments}
                         </div>
                         <p className="text-xs text-muted-foreground">
@@ -383,10 +383,10 @@ export default function TrainerDashboard() {
                         <CardTitle className="text-sm font-medium">
                           Pending
                         </CardTitle>
-                        <Activity className="h-4 w-4 text-orange-600" />
+                        <Activity className="h-4 w-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold text-orange-600">
+                        <div className="text-2xl font-bold text-muted-foreground">
                           {stats.pendingAssignments}
                         </div>
                         <p className="text-xs text-muted-foreground">

@@ -25,7 +25,7 @@ import { LoginRecordsTable } from '@/components/admin/LoginRecordsTable';
 import { PasswordResetPanel } from '@/components/admin/PasswordResetPanel';
 import { OrganizationsTable } from '@/components/admin/OrganizationsTable';
 import { ProfilePictureUpload } from '@/components/admin/ProfilePictureUpload';
-import { ModuleAssignmentPanel } from '@/components/admin/ModuleAssignmentPanel';
+import { AdminDocumentAssignmentPanel } from '@/components/admin/AdminDocumentAssignmentPanel';
 import { useAuth } from '@/lib/hooks/useAuth';
 
 interface LoginRecord {
@@ -389,7 +389,7 @@ export default function AdminDashboard() {
               </TabsContent>
 
               <TabsContent value="module-assignments" className="space-y-6">
-                <ModuleAssignmentPanel />
+                <AdminDocumentAssignmentPanel />
               </TabsContent>
 
               <TabsContent value="login-records" className="space-y-6">
