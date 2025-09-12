@@ -244,13 +244,17 @@ export function MemberDashboard() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
-        return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
+        return <Badge className="bg-primary/10 text-primary">Completed</Badge>;
       case 'in_progress':
-        return <Badge className="bg-blue-100 text-blue-800">In Progress</Badge>;
+        return <Badge className="bg-accent/10 text-accent">In Progress</Badge>;
       case 'assigned':
-        return <Badge className="bg-gray-100 text-gray-800">Assigned</Badge>;
+        return (
+          <Badge className="bg-muted text-muted-foreground">Assigned</Badge>
+        );
       default:
-        return <Badge className="bg-gray-100 text-gray-800">{status}</Badge>;
+        return (
+          <Badge className="bg-muted text-muted-foreground">{status}</Badge>
+        );
     }
   };
 
@@ -269,11 +273,11 @@ export function MemberDashboard() {
   if (error) {
     return (
       <div className="space-y-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6">
           <div className="flex items-center space-x-3">
             <div className="flex-shrink-0">
               <svg
-                className="h-5 w-5 text-red-400"
+                className="h-5 w-5 text-destructive"
                 viewBox="0 0 20 20"
                 fill="currentColor"
               >
@@ -285,10 +289,10 @@ export function MemberDashboard() {
               </svg>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-red-800">
+              <h3 className="text-sm font-medium text-destructive">
                 Error Loading Dashboard
               </h3>
-              <p className="text-sm text-red-700 mt-1">{error}</p>
+              <p className="text-sm text-destructive/80 mt-1">{error}</p>
             </div>
           </div>
           <div className="mt-4">
@@ -296,7 +300,7 @@ export function MemberDashboard() {
               onClick={() => window.location.reload()}
               variant="outline"
               size="sm"
-              className="text-red-700 border-red-300 hover:bg-red-100"
+              className="text-destructive border-destructive/30 hover:bg-destructive/10"
             >
               Try Again
             </Button>
@@ -310,24 +314,27 @@ export function MemberDashboard() {
     <div className="space-y-6">
       {/* Welcome Header with Stats */}
       <div className="space-y-6">
-        <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg shadow-sm border border-primary/10 p-6">
           <div className="flex items-center space-x-4">
-            <Avatar className="h-16 w-16">
-              <AvatarImage src={user?.profile_picture_url} alt={user?.name} />
-              <AvatarFallback className="text-lg">
-                {user?.name
-                  ?.split(' ')
-                  .map((n) => n[0])
-                  .join('')
-                  .toUpperCase()
-                  .slice(0, 2)}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative">
+              <Avatar className="h-16 w-16 ring-4 ring-primary/20">
+                <AvatarImage src={user?.profile_picture_url} alt={user?.name} />
+                <AvatarFallback className="text-lg bg-primary/10 text-primary">
+                  {user?.name
+                    ?.split(' ')
+                    .map((n) => n[0])
+                    .join('')
+                    .toUpperCase()
+                    .slice(0, 2)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-accent rounded-full border-2 border-background"></div>
+            </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-foreground">
                 Welcome back, {user?.name}!
               </h1>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Here&apos;s an overview of your dementia care planning journey
               </p>
             </div>
@@ -336,12 +343,14 @@ export function MemberDashboard() {
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card>
+          <Card className="bg-gradient-to-br from-muted/30 to-muted/50 border-muted/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Total Documents
               </CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
+              <div className="p-2 rounded-lg bg-muted/50">
+                <BookOpen className="h-4 w-4 text-muted-foreground" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.total}</div>
@@ -351,13 +360,15 @@ export function MemberDashboard() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Completed</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-600" />
+              <div className="p-2 rounded-lg bg-primary/10">
+                <CheckCircle className="h-4 w-4 text-primary" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-primary">
                 {stats.completed}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -366,13 +377,15 @@ export function MemberDashboard() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-gradient-to-br from-accent/5 to-accent/10 border-accent/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">In Progress</CardTitle>
-              <Clock className="h-4 w-4 text-blue-600" />
+              <div className="p-2 rounded-lg bg-accent/10">
+                <Clock className="h-4 w-4 text-accent" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-accent">
                 {stats.inProgress}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -381,12 +394,14 @@ export function MemberDashboard() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-gradient-to-br from-muted/30 to-muted/50 border-muted/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Overall Progress
               </CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <div className="p-2 rounded-lg bg-muted/50">
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.overallProgress}%</div>
@@ -397,10 +412,12 @@ export function MemberDashboard() {
       </div>
 
       {/* Recent Assignments */}
-      <Card>
+      <Card className="bg-gradient-to-br from-card to-card/80 border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
+            <div className="p-1 rounded bg-primary/10">
+              <FileText className="h-5 w-5 text-primary" />
+            </div>
             Recent Document Assignments
           </CardTitle>
           <CardDescription>
@@ -413,24 +430,26 @@ export function MemberDashboard() {
             {assignments.map((assignment) => (
               <div
                 key={assignment.id}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-between p-4 border border-border/50 rounded-lg hover:bg-muted/30 transition-all bg-gradient-to-r from-background to-muted/20"
               >
                 <div className="flex-1 space-y-2">
                   <div className="flex items-center gap-3">
-                    <h3 className="font-medium text-gray-900">
+                    <h3 className="font-medium text-foreground">
                       {assignment.documentTitle}
                     </h3>
                     {getStatusBadge(assignment.status)}
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     Assigned by {assignment.trainerName} on{' '}
                     {formatDate(assignment.assignedAt)}
                   </p>
                   {assignment.notes && (
-                    <p className="text-sm text-gray-500">{assignment.notes}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {assignment.notes}
+                    </p>
                   )}
                   {assignment.dueDate && (
-                    <div className="flex items-center gap-1 text-sm text-gray-500">
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <Calendar className="h-4 w-4" />
                       Due: {formatDate(assignment.dueDate)}
                     </div>
@@ -510,9 +529,14 @@ export function MemberDashboard() {
       </Card>
 
       {/* Quick Actions */}
-      <Card>
+      <Card className="bg-gradient-to-br from-card to-card/80 border-border/50">
         <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <div className="p-1 rounded bg-accent/10">
+              <Settings className="h-5 w-5 text-accent" />
+            </div>
+            Quick Actions
+          </CardTitle>
           <CardDescription>
             Common tasks and navigation shortcuts
           </CardDescription>
@@ -521,26 +545,26 @@ export function MemberDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Button
               variant="outline"
-              className="h-20 flex-col gap-2"
+              className="h-20 flex-col gap-2 hover:bg-primary/5 hover:border-primary/30 transition-all"
               onClick={() => router.push('/member/documents')}
             >
-              <FileText className="h-6 w-6" />
+              <FileText className="h-6 w-6 text-primary" />
               View All Documents
             </Button>
             <Button
               variant="outline"
-              className="h-20 flex-col gap-2"
+              className="h-20 flex-col gap-2 hover:bg-accent/5 hover:border-accent/30 transition-all"
               onClick={() => router.push('/member/profile')}
             >
-              <User className="h-6 w-6" />
+              <User className="h-6 w-6 text-accent" />
               Edit Profile
             </Button>
             <Button
               variant="outline"
-              className="h-20 flex-col gap-2"
+              className="h-20 flex-col gap-2 hover:bg-muted/50 hover:border-muted/50 transition-all"
               onClick={() => router.push('/change-password')}
             >
-              <Settings className="h-6 w-6" />
+              <Settings className="h-6 w-6 text-muted-foreground" />
               Change Password
             </Button>
           </div>

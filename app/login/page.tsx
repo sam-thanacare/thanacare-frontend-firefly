@@ -315,8 +315,8 @@ export default function LoginPage() {
     <TooltipProvider>
       <div className="min-h-screen flex flex-col pb-24">
         {/* Fixed Navbar */}
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-background border-b">
-          <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border/50">
+          <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-center relative">
             <Image
               src="/compassionate_choices.png"
               alt="Compassion & Choices"
@@ -325,7 +325,9 @@ export default function LoginPage() {
               height={48}
               priority
             />
-            <ThemeToggle />
+            <div className="absolute right-4">
+              <ThemeToggle />
+            </div>
           </div>
         </nav>
 
@@ -364,18 +366,18 @@ export default function LoginPage() {
           </div>
 
           {/* Right column */}
-          <div className="flex items-center justify-center p-8 bg-background">
-            <Card className="w-full max-w-md shadow-lg">
-              <CardContent className="pt-6">
+          <div className="flex items-center justify-center p-8 bg-gradient-to-br from-background to-muted/20">
+            <Card className="w-full max-w-2xl shadow-lg bg-gradient-to-br from-card to-card/80 border-border/50">
+              <CardContent className="pt-8 px-8">
                 {error && (
-                  <div className="mb-4 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md dark:text-red-400 dark:bg-red-900/20 dark:border-red-800">
+                  <div className="mb-4 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
                     {error}
                   </div>
                 )}
                 <Form {...form}>
                   <form
                     onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-6"
+                    className="space-y-8"
                   >
                     <FormField
                       control={form.control}
@@ -464,7 +466,7 @@ export default function LoginPage() {
                   </form>
                 </Form>
               </CardContent>
-              <CardFooter className="flex flex-col">
+              <CardFooter className="flex flex-col px-8 pb-8">
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="register">
                     <AccordionTrigger>Create an Account</AccordionTrigger>
@@ -472,7 +474,7 @@ export default function LoginPage() {
                       <Form {...registerForm}>
                         <form
                           onSubmit={registerForm.handleSubmit(handleRegister)}
-                          className="space-y-4"
+                          className="space-y-6"
                         >
                           <FormField
                             control={registerForm.control}
