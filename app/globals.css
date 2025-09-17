@@ -5,13 +5,13 @@
 
 @theme inline {
   /* Brand Colors */
-  --color-traverse-magenta: var(--traverse-magenta);
-  --color-infinity-pink: var(--infinity-pink);
-  --color-pure-white: var(--pure-white);
-  --color-xiketic: var(--xiketic);
-  --color-space-blue: var(--space-blue);
-  --color-slate: var(--slate);
-  --color-stone: var(--stone);
+  --traverse-magenta: var(--traverse-magenta);
+  --infinity-pink: var(--infinity-pink);
+  --pure-white: var(--pure-white);
+  --xiketic: var(--xiketic);
+  --space-blue: var(--space-blue);
+  --slate: var(--slate);
+  --stone: var(--stone);
 
   /* Theme Colors */
   --color-background: var(--background);
