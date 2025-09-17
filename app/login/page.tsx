@@ -319,7 +319,7 @@ export default function LoginPage() {
           <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-center relative">
             <Image
               src="/compassionate_choices.png"
-              alt="Compassion & Choices"
+              alt="Thanacare"
               className="h-12 w-auto object-contain"
               width={150}
               height={48}

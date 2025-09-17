@@ -114,8 +114,8 @@ export default function GuestPage() {
       icon: Users,
       items: [
         {
-          id: 'compassion-legal',
-          title: 'Connect with Compassion Legal',
+          id: 'thanacare-legal',
+          title: 'Connect with Thanacare Legal',
           completed: false,
         },
         {
@@ -168,15 +168,12 @@ export default function GuestPage() {
             <div className="flex items-center space-x-4">
               <Image
                 src="/compassionate_choices.png"
-                alt="Compassion & Choices"
+                alt="Thanacare"
                 className="h-12 w-auto object-contain"
                 width={150}
                 height={48}
                 priority
               />
-              <span className="text-xl font-semibold text-gray-900 dark:text-white">
-                Thanacare
-              </span>
             </div>
             <div className="flex items-center space-x-4">
               <Link href="/login">
@@ -196,9 +193,9 @@ export default function GuestPage() {
             Welcome!
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto">
-            Compassion and Choices&apos;s Healthcare Planning Platform is Your
-            Roadmap to Empowerment. Below are options you may select from to
-            help communicate your wishes regarding future care.
+            Thanacare&apos;s Healthcare Planning Platform is Your Roadmap to
+            Empowerment. Below are options you may select from to help
+            communicate your wishes regarding future care.
           </p>
         </div>
 
@@ -304,15 +301,14 @@ export default function GuestPage() {
             <div className="flex items-center space-x-4 mb-4 md:mb-0">
               <Image
                 src="/compassionate_choices.png"
-                alt="Compassion & Choices"
+                alt="Thanacare"
                 className="h-10 w-auto object-contain"
                 width={120}
                 height={40}
               />
-              <span className="text-lg font-semibold">Thanacare</span>
             </div>
             <p className="text-gray-400 text-center md:text-right">
-              © 2025 Thanacare. Compassionate healthcare for everyone.
+              © 2025 Thanacare. Empowering healthcare for everyone.
             </p>
           </div>
         </div>
