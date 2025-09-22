@@ -318,7 +318,7 @@ export default function LoginPage() {
         <nav className="fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border/50">
           <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-center relative">
             <Image
-              src="/compassionate_choices.png"
+              src="/firefly.png"
               alt="Thanacare"
               className="h-12 w-auto object-contain"
               width={150}

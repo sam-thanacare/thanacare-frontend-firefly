@@ -48,3 +48,4 @@ next-env.d.ts
 
 # Test scripts (prevent accidental commits)
 scripts/test_*.sh
+.vscode/launch.json

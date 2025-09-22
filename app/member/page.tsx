@@ -8,6 +8,7 @@ import { logout } from '@/lib/store/slices/authSlice';
 import { MemberDashboard as MemberDashboardComponent } from '@/components/member/MemberDashboard';
 import { MemberDocumentsTab } from '@/components/member/MemberDocumentsTab';
 import { MemberProgressTab } from '@/components/member/MemberProgressTab';
+import { MemberFamilyTab } from '@/components/member/MemberFamilyTab';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -21,6 +22,7 @@ import {
   Activity,
   TrendingUp,
   Settings,
+  Users,
 } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/useAuth';
 
@@ -224,7 +226,7 @@ export default function MemberDashboard() {
             }}
             className="space-y-6"
           >
-            <TabsList className="grid w-full grid-cols-4 lg:w-[600px]">
+            <TabsList className="grid w-full grid-cols-5 lg:w-[750px]">
               <TabsTrigger
                 value="overview"
                 className="flex items-center space-x-2"
@@ -247,6 +249,13 @@ export default function MemberDashboard() {
                 <span className="hidden sm:inline">Progress</span>
               </TabsTrigger>
               <TabsTrigger
+                value="family"
+                className="flex items-center space-x-2"
+              >
+                <Users className="h-4 w-4" />
+                <span className="hidden sm:inline">Family</span>
+              </TabsTrigger>
+              <TabsTrigger
                 value="profile"
                 className="flex items-center space-x-2"
               >
@@ -265,6 +274,10 @@ export default function MemberDashboard() {
 
             <TabsContent value="progress" className="space-y-6">
               <MemberProgressTab />
+            </TabsContent>
+
+            <TabsContent value="family" className="space-y-6">
+              <MemberFamilyTab />
             </TabsContent>
 
             <TabsContent value="profile" className="space-y-6">

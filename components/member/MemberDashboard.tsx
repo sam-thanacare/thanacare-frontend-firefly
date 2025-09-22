@@ -25,6 +25,8 @@ import {
   TrendingUp,
   BookOpen,
   Settings,
+  Heart,
+  Sparkles,
 } from 'lucide-react';
 import { debugLogger } from '@/lib/utils/debugLogger';
 
@@ -39,12 +41,34 @@ interface Assignment {
   trainerName: string;
 }
 
+interface FireflyAssignment {
+  id: string;
+  document_title: string;
+  status: string;
+  progress: number;
+  assigned_at: string;
+  due_date?: string;
+  notes?: string;
+  trainer_name: string;
+  family_name: string;
+}
+
 export function MemberDashboard() {
   const router = useRouter();
   const { user, token } = useAppSelector((state) => state.auth);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [fireflyAssignments, setFireflyAssignments] = useState<
+    FireflyAssignment[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
+    total: 0,
+    completed: 0,
+    inProgress: 0,
+    assigned: 0,
+    overallProgress: 0,
+  });
+  const [fireflyStats, setFireflyStats] = useState({
     total: 0,
     completed: 0,
     inProgress: 0,
@@ -213,6 +237,65 @@ export function MemberDashboard() {
         });
         setStats({ total, completed, inProgress, assigned, overallProgress });
         console.log('✅ MemberDashboard: Successfully loaded assignments');
+
+        // Load Firefly Documents assignments
+        try {
+          console.log(
+            '📡 MemberDashboard: Loading Firefly Documents assignments...'
+          );
+          const fireflyResponse = await fetch(
+            `${backendUrl}/api/member/firefly-assignments`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+
+          if (fireflyResponse.ok) {
+            const fireflyData = await fireflyResponse.json();
+            const fireflyAssignmentsData = fireflyData.data || fireflyData;
+
+            if (Array.isArray(fireflyAssignmentsData)) {
+              setFireflyAssignments(fireflyAssignmentsData);
+
+              // Calculate Firefly stats
+              const fireflyTotal = fireflyAssignmentsData.length;
+              const fireflyCompleted = fireflyAssignmentsData.filter(
+                (a: FireflyAssignment) => a.status === 'completed'
+              ).length;
+              const fireflyInProgress = fireflyAssignmentsData.filter(
+                (a: FireflyAssignment) => a.status === 'in_progress'
+              ).length;
+              const fireflyAssigned = fireflyAssignmentsData.filter(
+                (a: FireflyAssignment) => a.status === 'assigned'
+              ).length;
+              const fireflyOverallProgress =
+                fireflyTotal > 0
+                  ? Math.round((fireflyCompleted / fireflyTotal) * 100)
+                  : 0;
+
+              setFireflyStats({
+                total: fireflyTotal,
+                completed: fireflyCompleted,
+                inProgress: fireflyInProgress,
+                assigned: fireflyAssigned,
+                overallProgress: fireflyOverallProgress,
+              });
+            }
+          } else {
+            console.warn(
+              '⚠️ MemberDashboard: Failed to load Firefly assignments:',
+              fireflyResponse.status
+            );
+          }
+        } catch (fireflyError) {
+          console.warn(
+            '⚠️ MemberDashboard: Error loading Firefly assignments:',
+            fireflyError
+          );
+        }
       } catch (error) {
         console.error('❌ MemberDashboard: Error loading assignments:', error);
         console.error('❌ MemberDashboard: Error details:', {
@@ -342,191 +425,416 @@ export function MemberDashboard() {
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="bg-gradient-to-br from-muted/30 to-muted/50 border-muted/50">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Documents
-              </CardTitle>
-              <div className="p-2 rounded-lg bg-muted/50">
-                <BookOpen className="h-4 w-4 text-muted-foreground" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
-              <p className="text-xs text-muted-foreground">
-                Documents assigned to you
-              </p>
-            </CardContent>
-          </Card>
+        <div className="space-y-6">
+          {/* Dementia Tool Stats */}
+          <div>
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-primary" />
+              Dementia Care Planning
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card className="bg-gradient-to-br from-muted/30 to-muted/50 border-muted/50">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Total Documents
+                  </CardTitle>
+                  <div className="p-2 rounded-lg bg-muted/50">
+                    <BookOpen className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.total}</div>
+                  <p className="text-xs text-muted-foreground">
+                    Documents assigned to you
+                  </p>
+                </CardContent>
+              </Card>
 
-          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completed</CardTitle>
-              <div className="p-2 rounded-lg bg-primary/10">
-                <CheckCircle className="h-4 w-4 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-primary">
-                {stats.completed}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Successfully completed
-              </p>
-            </CardContent>
-          </Card>
+              <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Completed
+                  </CardTitle>
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <CheckCircle className="h-4 w-4 text-primary" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-primary">
+                    {stats.completed}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Successfully completed
+                  </p>
+                </CardContent>
+              </Card>
 
-          <Card className="bg-gradient-to-br from-accent/5 to-accent/10 border-accent/20">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">In Progress</CardTitle>
-              <div className="p-2 rounded-lg bg-accent/10">
-                <Clock className="h-4 w-4 text-accent" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-accent">
-                {stats.inProgress}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Currently working on
-              </p>
-            </CardContent>
-          </Card>
+              <Card className="bg-gradient-to-br from-accent/5 to-accent/10 border-accent/20">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    In Progress
+                  </CardTitle>
+                  <div className="p-2 rounded-lg bg-accent/10">
+                    <Clock className="h-4 w-4 text-accent" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-accent">
+                    {stats.inProgress}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Currently working on
+                  </p>
+                </CardContent>
+              </Card>
 
-          <Card className="bg-gradient-to-br from-muted/30 to-muted/50 border-muted/50">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Overall Progress
-              </CardTitle>
-              <div className="p-2 rounded-lg bg-muted/50">
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.overallProgress}%</div>
-              <p className="text-xs text-muted-foreground">Of all documents</p>
-            </CardContent>
-          </Card>
+              <Card className="bg-gradient-to-br from-muted/30 to-muted/50 border-muted/50">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Overall Progress
+                  </CardTitle>
+                  <div className="p-2 rounded-lg bg-muted/50">
+                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {stats.overallProgress}%
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Of all documents
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Firefly Documents Stats */}
+          <div>
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Heart className="h-5 w-5 text-purple-500" />
+              Firefly Documents
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Total Documents
+                  </CardTitle>
+                  <div className="p-2 rounded-lg bg-purple-100">
+                    <Sparkles className="h-4 w-4 text-purple-600" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-purple-700">
+                    {fireflyStats.total}
+                  </div>
+                  <p className="text-xs text-purple-600">
+                    Health care planning documents
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Completed
+                  </CardTitle>
+                  <div className="p-2 rounded-lg bg-green-100">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-700">
+                    {fireflyStats.completed}
+                  </div>
+                  <p className="text-xs text-green-600">
+                    Successfully completed
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    In Progress
+                  </CardTitle>
+                  <div className="p-2 rounded-lg bg-blue-100">
+                    <Clock className="h-4 w-4 text-blue-600" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-blue-700">
+                    {fireflyStats.inProgress}
+                  </div>
+                  <p className="text-xs text-blue-600">Currently working on</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Overall Progress
+                  </CardTitle>
+                  <div className="p-2 rounded-lg bg-purple-100">
+                    <TrendingUp className="h-4 w-4 text-purple-600" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-purple-700">
+                    {fireflyStats.overallProgress}%
+                  </div>
+                  <p className="text-xs text-purple-600">Of all documents</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Recent Assignments */}
-      <Card className="bg-gradient-to-br from-card to-card/80 border-border/50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <div className="p-1 rounded bg-primary/10">
-              <FileText className="h-5 w-5 text-primary" />
-            </div>
-            Recent Document Assignments
-          </CardTitle>
-          <CardDescription>
-            Your assigned dementia care planning documents and their current
-            status
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {assignments.map((assignment) => (
-              <div
-                key={assignment.id}
-                className="flex items-center justify-between p-4 border border-border/50 rounded-lg hover:bg-muted/30 transition-all bg-gradient-to-r from-background to-muted/20"
-              >
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center gap-3">
-                    <h3 className="font-medium text-foreground">
-                      {assignment.documentTitle}
-                    </h3>
-                    {getStatusBadge(assignment.status)}
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Assigned by {assignment.trainerName} on{' '}
-                    {formatDate(assignment.assignedAt)}
-                  </p>
-                  {assignment.notes && (
+      <div className="space-y-6">
+        {/* Dementia Tool Assignments */}
+        <Card className="bg-gradient-to-br from-card to-card/80 border-border/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <div className="p-1 rounded bg-primary/10">
+                <FileText className="h-5 w-5 text-primary" />
+              </div>
+              Dementia Care Planning Documents
+            </CardTitle>
+            <CardDescription>
+              Your assigned dementia care planning documents and their current
+              status
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {assignments.map((assignment) => (
+                <div
+                  key={assignment.id}
+                  className="flex items-center justify-between p-4 border border-border/50 rounded-lg hover:bg-muted/30 transition-all bg-gradient-to-r from-background to-muted/20"
+                >
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-3">
+                      <h3 className="font-medium text-foreground">
+                        {assignment.documentTitle}
+                      </h3>
+                      {getStatusBadge(assignment.status)}
+                    </div>
                     <p className="text-sm text-muted-foreground">
-                      {assignment.notes}
+                      Assigned by {assignment.trainerName} on{' '}
+                      {formatDate(assignment.assignedAt)}
                     </p>
-                  )}
-                  {assignment.dueDate && (
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <Calendar className="h-4 w-4" />
-                      Due: {formatDate(assignment.dueDate)}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <div className="text-sm font-medium">
-                      {assignment.progress}%
-                    </div>
-                    <Progress value={assignment.progress} className="w-20" />
-                  </div>
-
-                  <div className="flex gap-2">
-                    {assignment.status === 'completed' ? (
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4 mr-2" />
-                        View
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          console.log(
-                            '🚀 MemberDashboard: Start/Continue button clicked'
-                          );
-                          console.log(
-                            '📄 MemberDashboard: Assignment details:',
-                            {
-                              id: assignment.id,
-                              title: assignment.documentTitle,
-                              status: assignment.status,
-                              progress: assignment.progress,
-                            }
-                          );
-                          console.log(
-                            '🔗 MemberDashboard: Navigating to:',
-                            `/member/documents/${assignment.id}`
-                          );
-                          router.push(`/member/documents/${assignment.id}`);
-                        }}
-                      >
-                        {assignment.status === 'assigned' ? (
-                          <>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Start
-                          </>
-                        ) : (
-                          <>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Continue
-                          </>
-                        )}
-                      </Button>
+                    {assignment.notes && (
+                      <p className="text-sm text-muted-foreground">
+                        {assignment.notes}
+                      </p>
+                    )}
+                    {assignment.dueDate && (
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Calendar className="h-4 w-4" />
+                        Due: {formatDate(assignment.dueDate)}
+                      </div>
                     )}
                   </div>
-                </div>
-              </div>
-            ))}
 
-            {assignments.length === 0 && (
-              <div className="text-center py-8">
-                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No Documents Assigned
-                </h3>
-                <p className="text-gray-500 mb-4">
-                  You don&apos;t have any dementia tool documents assigned yet.
-                  Your trainer will assign documents when they&apos;re ready for
-                  you to complete.
-                </p>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <div className="text-sm font-medium">
+                        {assignment.progress}%
+                      </div>
+                      <Progress value={assignment.progress} className="w-20" />
+                    </div>
+
+                    <div className="flex gap-2">
+                      {assignment.status === 'completed' ? (
+                        <Button variant="outline" size="sm">
+                          <Eye className="h-4 w-4 mr-2" />
+                          View
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            console.log(
+                              '🚀 MemberDashboard: Start/Continue button clicked'
+                            );
+                            console.log(
+                              '📄 MemberDashboard: Assignment details:',
+                              {
+                                id: assignment.id,
+                                title: assignment.documentTitle,
+                                status: assignment.status,
+                                progress: assignment.progress,
+                              }
+                            );
+                            console.log(
+                              '🔗 MemberDashboard: Navigating to:',
+                              `/member/documents/${assignment.id}`
+                            );
+                            router.push(`/member/documents/${assignment.id}`);
+                          }}
+                        >
+                          {assignment.status === 'assigned' ? (
+                            <>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Start
+                            </>
+                          ) : (
+                            <>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Continue
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {assignments.length === 0 && (
+                <div className="text-center py-8">
+                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No Documents Assigned
+                  </h3>
+                  <p className="text-gray-500 mb-4">
+                    You don&apos;t have any dementia tool documents assigned
+                    yet. Your trainer will assign documents when they&apos;re
+                    ready for you to complete.
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Firefly Documents Assignments */}
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <div className="p-1 rounded bg-purple-100">
+                <Heart className="h-5 w-5 text-purple-600" />
               </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+              Firefly Documents
+            </CardTitle>
+            <CardDescription>
+              Your assigned health care planning documents for values, goals,
+              and wishes
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {fireflyAssignments.map((assignment) => (
+                <div
+                  key={assignment.id}
+                  className="flex items-center justify-between p-4 border border-purple-200 rounded-lg hover:bg-purple-50 transition-all bg-gradient-to-r from-white to-purple-50"
+                >
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-3">
+                      <h3 className="font-medium text-purple-900">
+                        {assignment.document_title}
+                      </h3>
+                      {getStatusBadge(assignment.status)}
+                    </div>
+                    <p className="text-sm text-purple-700">
+                      Assigned by {assignment.trainer_name} on{' '}
+                      {formatDate(assignment.assigned_at)}
+                    </p>
+                    {assignment.notes && (
+                      <p className="text-sm text-purple-600">
+                        {assignment.notes}
+                      </p>
+                    )}
+                    {assignment.due_date && (
+                      <div className="flex items-center gap-1 text-sm text-purple-600">
+                        <Calendar className="h-4 w-4" />
+                        Due: {formatDate(assignment.due_date)}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-purple-700">
+                        {assignment.progress}%
+                      </div>
+                      <Progress value={assignment.progress} className="w-20" />
+                    </div>
+
+                    <div className="flex gap-2">
+                      {assignment.status === 'completed' ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          View
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          className="bg-purple-600 hover:bg-purple-700 text-white"
+                          onClick={() => {
+                            console.log(
+                              '🚀 MemberDashboard: Firefly Document button clicked'
+                            );
+                            console.log(
+                              '📄 MemberDashboard: Firefly Assignment details:',
+                              {
+                                id: assignment.id,
+                                title: assignment.document_title,
+                                status: assignment.status,
+                                progress: assignment.progress,
+                              }
+                            );
+                            console.log(
+                              '🔗 MemberDashboard: Navigating to:',
+                              `/member/firefly-documents/${assignment.id}`
+                            );
+                            router.push(
+                              `/member/firefly-documents/${assignment.id}`
+                            );
+                          }}
+                        >
+                          {assignment.status === 'assigned' ? (
+                            <>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Start
+                            </>
+                          ) : (
+                            <>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Continue
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {fireflyAssignments.length === 0 && (
+                <div className="text-center py-8">
+                  <Heart className="h-12 w-12 text-purple-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-purple-900 mb-2">
+                    No Firefly Documents Assigned
+                  </h3>
+                  <p className="text-purple-600 mb-4">
+                    You don&apos;t have any Firefly Documents assigned yet. Your
+                    trainer will assign documents when they&apos;re ready for
+                    you to complete.
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Quick Actions */}
       <Card className="bg-gradient-to-br from-card to-card/80 border-border/50">
@@ -542,14 +850,22 @@ export function MemberDashboard() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Button
               variant="outline"
               className="h-20 flex-col gap-2 hover:bg-primary/5 hover:border-primary/30 transition-all"
               onClick={() => router.push('/member/documents')}
             >
               <FileText className="h-6 w-6 text-primary" />
-              View All Documents
+              Dementia Documents
+            </Button>
+            <Button
+              variant="outline"
+              className="h-20 flex-col gap-2 hover:bg-purple-50 hover:border-purple-300 transition-all"
+              onClick={() => router.push('/member/firefly-documents')}
+            >
+              <Heart className="h-6 w-6 text-purple-600" />
+              Firefly Documents
             </Button>
             <Button
               variant="outline"

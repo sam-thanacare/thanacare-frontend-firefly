@@ -66,7 +66,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <Image
-                src="/compassionate_choices.png"
+                src="/firefly.png"
                 alt="Thanacare"
                 className="h-12 w-auto object-contain"
                 width={150}
