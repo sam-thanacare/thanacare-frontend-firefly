@@ -371,7 +371,7 @@ export function TrainerDocumentAssignmentPanel() {
             Document Assignments
           </h2>
           <p className="text-muted-foreground">
-            Assign dementia tool documents to members and track their progress
+            Assign firefly tool documents to members and track their progress
           </p>
         </div>
         <Dialog open={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen}>

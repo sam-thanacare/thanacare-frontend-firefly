@@ -226,7 +226,7 @@ export function MemberDocumentsTab() {
                 <span>Document Assignments</span>
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Your assigned dementia care planning documents
+                Your assigned firefly care planning documents
               </p>
             </div>
             <Button
@@ -247,8 +247,8 @@ export function MemberDocumentsTab() {
                 No Documents Assigned
               </h3>
               <p className="text-muted-foreground">
-                You don&apos;t have any dementia tool documents assigned yet.
-                Your trainer will assign documents when they&apos;re ready for
+                You don&apos;t have any firefly tool documents assigned yet.
+                Your volunteer will assign documents when they&apos;re ready for
                 you to complete.
               </p>
             </div>
@@ -272,7 +272,7 @@ export function MemberDocumentsTab() {
                           {getStatusBadge(assignment.status)}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          <span>Trainer: {assignment.trainerName}</span>
+                          <span>Volunteer: {assignment.trainerName}</span>
                           {assignment.dueDate && (
                             <span className="ml-4">
                               Due: {formatDate(assignment.dueDate)}

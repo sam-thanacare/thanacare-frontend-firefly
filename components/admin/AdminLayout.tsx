@@ -96,7 +96,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   onClick={() => router.push('/trainer')}
                   className="text-sm text-primary hover:underline block w-full"
                 >
-                  Go to Trainer Dashboard
+                  Go to Volunteer Dashboard
                 </button>
               )}
               {user?.role === 'member' && (

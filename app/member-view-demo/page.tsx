@@ -34,7 +34,7 @@ export default function MemberViewDemo() {
   const [assignments] = useState<Assignment[]>([
     {
       id: '1',
-      documentTitle: 'Dementia Values & Priorities Tool',
+      documentTitle: 'firefly Values & Priorities Tool',
       status: 'in_progress',
       progress: 65,
       assignedAt: '2024-01-15',
@@ -103,9 +103,9 @@ export default function MemberViewDemo() {
 
       <main className="max-w-4xl mx-auto p-6 space-y-6">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold">My Dementia Tool Documents</h1>
+          <h1 className="text-3xl font-bold">My firefly Tool Documents</h1>
           <p className="text-muted-foreground">
-            View and complete your assigned dementia care planning documents
+            View and complete your assigned firefly care planning documents
           </p>
         </div>
 
@@ -177,7 +177,7 @@ export default function MemberViewDemo() {
                 {assignment.notes && (
                   <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-md">
                     <p className="text-sm text-gray-700 dark:text-gray-300">
-                      <strong>Note from trainer:</strong> {assignment.notes}
+                      <strong>Note from volunteer:</strong> {assignment.notes}
                     </p>
                   </div>
                 )}
@@ -247,7 +247,7 @@ export default function MemberViewDemo() {
                 • Discuss your preferences with family members and loved ones
               </p>
               <p>
-                • Contact your trainer if you have questions about any section
+                • Contact your volunteer if you have questions about any section
               </p>
               <p>
                 • You can save your progress and return to complete the document
@@ -272,7 +272,7 @@ export default function MemberViewDemo() {
               <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
                 This demo shows you the member experience. Sign up to create
                 your account and start receiving personalized care planning
-                documents from your trainer.
+                documents from your volunteer.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/login">

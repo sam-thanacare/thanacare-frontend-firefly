@@ -188,7 +188,7 @@ export default function ChangePasswordPage() {
                     {user?.role === 'admin'
                       ? 'Go to Admin Dashboard'
                       : user?.role === 'trainer'
-                        ? 'Go to Trainer Dashboard'
+                        ? 'Go to Volunteer Dashboard'
                         : user?.role === 'member'
                           ? 'Go to Member Dashboard'
                           : 'Go to Guest Page'}

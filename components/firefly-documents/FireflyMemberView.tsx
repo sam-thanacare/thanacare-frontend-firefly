@@ -194,7 +194,7 @@ export default function FireflyMemberView() {
               {assignment.notes && (
                 <div className="bg-gray-50 p-3 rounded-md">
                   <p className="text-sm text-gray-700">
-                    <strong>Note from trainer:</strong> {assignment.notes}
+                    <strong>Note from volunteer:</strong> {assignment.notes}
                   </p>
                 </div>
               )}
@@ -262,7 +262,7 @@ export default function FireflyMemberView() {
             </h3>
             <p className="text-gray-500 mb-4">
               You don&apos;t have any Firefly Documents assigned yet. Your
-              trainer will assign documents when they&apos;re ready for you to
+              volunteer will assign documents when they&apos;re ready for you to
               complete.
             </p>
             <Button variant="outline">
@@ -281,7 +281,7 @@ export default function FireflyMemberView() {
             <p>• Take your time to think through each question carefully</p>
             <p>• Discuss your preferences with family members and loved ones</p>
             <p>
-              • Contact your trainer if you have questions about any section
+              • Contact your volunteer if you have questions about any section
             </p>
             <p>
               • You can save your progress and return to complete the document

@@ -321,7 +321,7 @@ export function MemberProgressTab() {
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium mb-2">No Assignments Yet</h3>
               <p className="text-muted-foreground">
-                You don&apos;t have any document assignments yet. Your trainer
+                You don&apos;t have any document assignments yet. Your volunteer
                 will assign documents when they&apos;re ready for you to
                 complete.
               </p>
@@ -346,7 +346,7 @@ export function MemberProgressTab() {
                           {getStatusBadge(assignment.status)}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          <span>Trainer: {assignment.trainerName}</span>
+                          <span>Volunteer: {assignment.trainerName}</span>
                           {assignment.completedAt && (
                             <span className="ml-4">
                               Completed: {formatDate(assignment.completedAt)}

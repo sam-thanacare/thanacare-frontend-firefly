@@ -157,10 +157,10 @@ export function ModuleAssignmentPanel() {
         setDocuments([
           {
             id: document.id || 'default',
-            title: document.title || 'Dementia Values & Priorities Tool',
+            title: document.title || 'firefly Values & Priorities Tool',
             description:
               document.description ||
-              'Comprehensive dementia care planning document',
+              'Comprehensive firefly care planning document',
             version: document.version || '1.0',
           },
         ]);
@@ -169,8 +169,8 @@ export function ModuleAssignmentPanel() {
         setDocuments([
           {
             id: 'default',
-            title: 'Dementia Values & Priorities Tool',
-            description: 'Comprehensive dementia care planning document',
+            title: 'firefly Values & Priorities Tool',
+            description: 'Comprehensive firefly care planning document',
             version: '1.0',
           },
         ]);
@@ -491,12 +491,12 @@ export function ModuleAssignmentPanel() {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Plus className="h-5 w-5" />
-            <span>Assign Dementia Tool Document</span>
+            <span>Assign firefly Tool Document</span>
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Assign dementia values and priorities documents to members only. A
-            trainer must be selected to manage and monitor the assignment.
-            Trainers and admins cannot be assigned documents.
+            Assign firefly values and priorities documents to members only. A
+            volunteer must be selected to manage and monitor the assignment.
+            Volunteers and admins cannot be assigned documents.
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -515,10 +515,10 @@ export function ModuleAssignmentPanel() {
                     {validMemberUsers.length === 0 &&
                       'No members available for document assignment. '}
                     {trainerUsers.length === 0 &&
-                      'No trainers available to manage assignments. '}
+                      'No volunteers available to manage assignments. '}
                     {documents.length === 0 && 'No documents available. '}
-                    Please create members, trainers, and documents before
-                    assigning dementia tool documents. Note: Documents can only
+                    Please create members, volunteers, and documents before
+                    assigning firefly tool documents. Note: Documents can only
                     be assigned to members.
                   </p>
                 </div>
@@ -556,13 +556,13 @@ export function ModuleAssignmentPanel() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="trainer">Managing Trainer *</Label>
+              <Label htmlFor="trainer">Managing Volunteer *</Label>
               <Select
                 value={selectedTrainer}
                 onValueChange={setSelectedTrainer}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a trainer to manage this assignment" />
+                  <SelectValue placeholder="Select a volunteer to manage this assignment" />
                 </SelectTrigger>
                 <SelectContent>
                   {trainerUsers.length > 0 ? (
@@ -579,13 +579,13 @@ export function ModuleAssignmentPanel() {
                     ))
                   ) : (
                     <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                      No trainers available
+                      No volunteers available
                     </div>
                   )}
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                The trainer will manage and monitor this assignment for the
+                The volunteer will manage and monitor this assignment for the
                 member.
               </p>
             </div>
@@ -693,7 +693,7 @@ export function ModuleAssignmentPanel() {
             <span>Current Assignments</span>
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            View and manage all dementia tool document assignments
+            View and manage all firefly tool document assignments
           </p>
         </CardHeader>
         <CardContent>

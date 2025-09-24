@@ -472,7 +472,7 @@ export function AdminDocumentAssignmentPanel() {
             Document Assignments
           </h2>
           <p className="text-muted-foreground">
-            Assign dementia tool documents to members and track their progress
+            Assign firefly tool documents to members and track their progress
           </p>
         </div>
         <Dialog open={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen}>
@@ -518,7 +518,7 @@ export function AdminDocumentAssignmentPanel() {
 
               <div className="space-y-2">
                 <Label htmlFor="trainer" className="text-sm font-medium">
-                  Managing Trainer *
+                  Managing Volunteer *
                 </Label>
                 <Select
                   value={selectedTrainer}
@@ -527,7 +527,7 @@ export function AdminDocumentAssignmentPanel() {
                   <SelectTrigger className="w-full">
                     <span className="block truncate">
                       {selectedTrainerDisplay ||
-                        'Select a trainer to manage this assignment'}
+                        'Select a volunteer to manage this assignment'}
                     </span>
                   </SelectTrigger>
                   <SelectContent>
@@ -545,7 +545,7 @@ export function AdminDocumentAssignmentPanel() {
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  The trainer will manage and monitor this assignment for the
+                  The volunteer will manage and monitor this assignment for the
                   member.
                 </p>
               </div>
@@ -673,7 +673,7 @@ export function AdminDocumentAssignmentPanel() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Member</TableHead>
-                  <TableHead>Trainer</TableHead>
+                  <TableHead>Volunteer</TableHead>
                   <TableHead>Document</TableHead>
                   <TableHead>Family</TableHead>
                   <TableHead>Status</TableHead>

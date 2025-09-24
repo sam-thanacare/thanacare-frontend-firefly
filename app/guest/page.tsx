@@ -35,19 +35,8 @@ export default function GuestPage() {
       items: [
         {
           id: 'eol-checklist',
-          title: 'End-of-Life Planning Checklists',
-          completed: false,
-        },
-        { id: 'disease-decoder', title: 'Disease Decoder', completed: false },
-        {
-          id: 'esrd-guide',
-          title: 'ESRD - What Does It Mean For ME?',
-          completed: false,
-        },
-        {
-          id: 'cancer-guide',
-          title: 'Cancer - What Does It Mean For ME?',
-          completed: false,
+          title: 'Planning Checklists',
+          completed: true,
         },
         {
           id: 'copd-guide',
@@ -56,12 +45,12 @@ export default function GuestPage() {
         },
         {
           id: 'maid-handbook',
-          title: 'Medical Aid In Dying Handbook',
+          title: 'Medical Handbook',
           completed: false,
         },
         {
           id: 'vsed-handbook',
-          title: 'Voluntary Stop Eating and Drinking Handbook',
+          title: 'Voluntary Handbook',
           completed: false,
         },
       ],
@@ -70,33 +59,18 @@ export default function GuestPage() {
       id: 'document-completion',
       title: 'Document Completion',
       description:
-        'Identifying and educating a healthcare proxy Completing advance directives Making dementia-specific care plans',
+        'Identifying and educating a healthcare proxy Completing advance directives Making firefly-specific care plans',
       icon: FileText,
       items: [
         {
           id: 'dementia-values',
-          title: 'Dementia Values & Priorities',
+          title: 'Values & Priorities',
           completed: false,
-          link: '/dementia-tool-demo',
-        },
-        {
-          id: 'advance-directives',
-          title: 'Advance Directives (state-specific forms)',
-          completed: false,
-        },
-        {
-          id: 'sectarian-directive',
-          title: 'Sectarian Healthcare Directive',
-          completed: false,
+          link: '/firefly-documents-demo',
         },
         {
           id: 'visitation-auth',
           title: 'Hospital Visitation Authorization',
-          completed: false,
-        },
-        {
-          id: 'lgbtq-planning',
-          title: 'LGBTQ+ advance care planning',
           completed: false,
         },
         {
@@ -114,18 +88,13 @@ export default function GuestPage() {
       icon: Users,
       items: [
         {
-          id: 'thanacare-legal',
-          title: 'Connect with Thanacare Legal',
-          completed: false,
-        },
-        {
           id: 'life-therapies',
-          title: 'My Particular Wishes for Therapies That Could Sustain Life',
+          title: 'My Particular Wishes for Therapies',
           completed: false,
         },
         {
           id: 'provider-letter',
-          title: 'End-of-Life Wishes Letter to Medical Providers',
+          title: 'Letter to Medical Providers',
           completed: false,
         },
         {
@@ -193,9 +162,9 @@ export default function GuestPage() {
             Welcome!
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto">
-            Thanacare&apos;s Healthcare Planning Platform is Your Roadmap to
-            Empowerment. Below are options you may select from to help
-            communicate your wishes regarding future care.
+            Thanacare&apos;s Healthcare Planning Platform. Below are options you
+            may select from to help communicate your wishes regarding future
+            care.
           </p>
         </div>
 
@@ -262,23 +231,23 @@ export default function GuestPage() {
                   <Play className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Take a Tour of the Dementia Tool
+                  Take a Tour of the firefly Tool
                 </h2>
               </div>
               <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
-                Experience our comprehensive Dementia Values & Priorities tool
+                Experience our comprehensive firefly Values & Priorities tool
                 that helps you communicate your wishes for future care. This
                 interactive demo will guide you through the process step by
                 step.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/dementia-tool-demo">
+                {/* <Link href="/dementia-tool-demo">
                   <Button size="lg" className="w-full sm:w-auto">
                     <Play className="mr-2 h-4 w-4" />
-                    Start Dementia Tool Tour
+                    Start firefly Tool Tour
                   </Button>
-                </Link>
-                <Link href="/member-view-demo">
+                </Link> */}
+                <Link href="/firefly-documents-demo">
                   <Button
                     variant="outline"
                     size="lg"

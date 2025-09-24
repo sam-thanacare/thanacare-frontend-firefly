@@ -249,8 +249,8 @@ export function MemberFamilyTab() {
                 Parent/Guardian
               </CardTitle>
               <CardDescription>
-                Your family members and caregivers involved in your dementia
-                care planning
+                Your family members and caregivers involved in your firefly care
+                planning
               </CardDescription>
             </div>
             <Button
@@ -455,8 +455,8 @@ export function MemberFamilyTab() {
               </h3>
               <p className="text-gray-500 mb-4">
                 You don&apos;t have any family members associated with your
-                account yet. Contact your trainer or administrator to add family
-                members to your profile.
+                account yet. Contact your volunteer or administrator to add
+                family members to your profile.
               </p>
             </div>
           )}

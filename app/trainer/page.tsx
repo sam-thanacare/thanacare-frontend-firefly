@@ -172,7 +172,9 @@ export default function TrainerDashboard() {
                     <GraduationCap className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <h1 className="text-xl font-semibold">Trainer Dashboard</h1>
+                    <h1 className="text-xl font-semibold">
+                      Volunteer Dashboard
+                    </h1>
                     <p className="text-xs text-muted-foreground">
                       Welcome back, {user?.name}
                     </p>
@@ -186,7 +188,7 @@ export default function TrainerDashboard() {
                 >
                   <GraduationCap className="h-3 w-3" />
                   <span className="text-xs font-medium">
-                    Healthcare Trainer
+                    Healthcare Volunteer
                   </span>
                 </Badge>
                 <div className="flex items-center space-x-3">
@@ -281,7 +283,7 @@ export default function TrainerDashboard() {
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {statsLoading
-                      ? 'Total dementia tool assignments'
+                      ? 'Total firefly tool assignments'
                       : `${stats.completedAssignments} completed, ${stats.inProgressAssignments} in progress`}
                   </p>
                 </CardContent>
@@ -293,7 +295,7 @@ export default function TrainerDashboard() {
               value={activeTab}
               onValueChange={(value) => {
                 console.log(
-                  'Trainer Dashboard: Tab changed from',
+                  'Volunteer Dashboard: Tab changed from',
                   activeTab,
                   'to',
                   value

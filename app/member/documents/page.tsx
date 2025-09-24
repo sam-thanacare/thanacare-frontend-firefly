@@ -372,7 +372,7 @@ export default function MemberDocumentsPage() {
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
                       id="search"
-                      placeholder="Search by title, trainer, or family..."
+                      placeholder="Search by title, volunteer, or family..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10"
@@ -444,7 +444,7 @@ export default function MemberDocumentsPage() {
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
                             <div>
-                              <span className="font-medium">Trainer:</span>{' '}
+                              <span className="font-medium">Volunteer:</span>{' '}
                               {assignment.trainerName}
                             </div>
                             {assignment.familyName && (
@@ -531,7 +531,7 @@ export default function MemberDocumentsPage() {
                     <p className="text-gray-500 mb-4">
                       {searchTerm || statusFilter !== 'all'
                         ? 'Try adjusting your search or filter criteria.'
-                        : "You don't have any dementia tool documents assigned yet. Your trainer will assign documents when they're ready for you to complete."}
+                        : "You don't have any dementia tool documents assigned yet. Your volunteer will assign documents when they're ready for you to complete."}
                     </p>
                     {(searchTerm || statusFilter !== 'all') && (
                       <Button

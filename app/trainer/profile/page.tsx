@@ -208,7 +208,9 @@ export default function TrainerProfilePage() {
                 className="hidden sm:flex items-center space-x-1 px-2 py-1"
               >
                 <GraduationCap className="h-3 w-3" />
-                <span className="text-xs font-medium">Healthcare Trainer</span>
+                <span className="text-xs font-medium">
+                  Healthcare Volunteer
+                </span>
               </Badge>
               <div className="flex items-center space-x-3">
                 <Avatar className="h-8 w-8">

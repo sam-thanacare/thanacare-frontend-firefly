@@ -843,12 +843,10 @@ export default function DementiaValuesForm({
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold">
-          Dementia Values & Priorities Tool
-        </h1>
+        <h1 className="text-3xl font-bold">firefly Values & Priorities Tool</h1>
         <p className="text-muted-foreground">
           A comprehensive tool to help communicate your wishes regarding future
-          care if living with dementia
+          care if living with firefly
         </p>
       </div>
 
@@ -1073,7 +1071,7 @@ export default function DementiaValuesForm({
             <div className="flex items-center gap-2 text-green-700">
               <CheckCircle className="h-5 w-5" />
               <span className="font-medium">
-                Congratulations! You have completed the Dementia Values &
+                Congratulations! You have completed the firefly Values &
                 Priorities Tool.
               </span>
             </div>

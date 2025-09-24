@@ -338,11 +338,11 @@ export default function DementiaToolDemo() {
         {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold">
-            Dementia Values & Priorities Tool
+            firefly Values & Priorities Tool
           </h1>
           <p className="text-muted-foreground">
             A comprehensive tool to help communicate your wishes regarding
-            future care if living with dementia
+            future care if living with firefly
           </p>
         </div>
 
@@ -350,7 +350,7 @@ export default function DementiaToolDemo() {
         <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
           <Play className="h-4 w-4" />
           <AlertDescription>
-            This is a demonstration of the Dementia Values & Priorities Tool.
+            This is a demonstration of the firefly Values & Priorities Tool.
             Your responses are not saved in demo mode.
             <Link href="/login" className="ml-2 text-blue-600 hover:underline">
               Sign in to save your progress
@@ -477,7 +477,7 @@ export default function DementiaToolDemo() {
                 </h2>
               </div>
               <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
-                This demo shows you how the Dementia Values & Priorities Tool
+                This demo shows you how the firefly Values & Priorities Tool
                 works. Sign up to create your account and start planning your
                 healthcare wishes.
               </p>

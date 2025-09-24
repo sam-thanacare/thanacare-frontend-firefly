@@ -592,7 +592,7 @@ export function OrganizationsTable() {
                 all associated data including:
               </p>
               <ul className="text-sm text-destructive mt-2 ml-4 list-disc">
-                <li>Trainer profiles</li>
+                <li>Volunteer profiles</li>
                 <li>Families</li>
                 <li>Member profiles</li>
                 <li>All related data</li>

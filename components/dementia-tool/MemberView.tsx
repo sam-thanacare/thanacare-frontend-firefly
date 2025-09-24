@@ -115,9 +115,9 @@ export default function MemberView() {
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold">My Dementia Tool Documents</h1>
+        <h1 className="text-3xl font-bold">My firefly Tool Documents</h1>
         <p className="text-muted-foreground">
-          View and complete your assigned dementia care planning documents
+          View and complete your assigned firefly care planning documents
         </p>
       </div>
 
@@ -189,7 +189,7 @@ export default function MemberView() {
               {assignment.notes && (
                 <div className="bg-gray-50 p-3 rounded-md">
                   <p className="text-sm text-gray-700">
-                    <strong>Note from trainer:</strong> {assignment.notes}
+                    <strong>Note from volunteer:</strong> {assignment.notes}
                   </p>
                 </div>
               )}
@@ -256,8 +256,8 @@ export default function MemberView() {
               No Documents Assigned
             </h3>
             <p className="text-gray-500 mb-4">
-              You don&apos;t have any dementia tool documents assigned yet. Your
-              trainer will assign documents when they&apos;re ready for you to
+              You don&apos;t have any firefly tool documents assigned yet. Your
+              volunteer will assign documents when they&apos;re ready for you to
               complete.
             </p>
             <Button variant="outline">
@@ -276,7 +276,7 @@ export default function MemberView() {
             <p>• Take your time to think through each question carefully</p>
             <p>• Discuss your preferences with family members and loved ones</p>
             <p>
-              • Contact your trainer if you have questions about any section
+              • Contact your volunteer if you have questions about any section
             </p>
             <p>
               • You can save your progress and return to complete the document

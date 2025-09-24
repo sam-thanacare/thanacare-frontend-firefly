@@ -86,7 +86,7 @@ const registerSchema = z
       return true;
     },
     {
-      message: 'Organization ID is required for trainers',
+      message: 'Organization ID is required for volunteers',
       path: ['organizationId'],
     }
   )
@@ -549,7 +549,7 @@ export default function LoginPage() {
                                         htmlFor="trainer"
                                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                       >
-                                        Trainer
+                                        Volunteer
                                       </label>
                                     </div>
                                   </div>
@@ -559,7 +559,7 @@ export default function LoginPage() {
                             )}
                           />
 
-                          {/* Conditional Organization ID field for trainers */}
+                          {/* Conditional Organization ID field for volunteers */}
                           {registerForm.watch('role') === 'trainer' && (
                             <FormField
                               control={registerForm.control}

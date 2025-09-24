@@ -18,7 +18,7 @@ export function TrainerLayout({ children }: TrainerLayoutProps) {
 
   useEffect(() => {
     const checkAccess = () => {
-      console.log('TrainerLayout - Checking access:', {
+      console.log('VolunteerLayout - Checking access:', {
         isAuthenticated,
         hasToken: !!token,
         userRole: user?.role,
@@ -27,14 +27,16 @@ export function TrainerLayout({ children }: TrainerLayoutProps) {
       });
 
       if (!isAuthenticated || !token) {
-        console.log('TrainerLayout - Not authenticated, redirecting to login');
+        console.log(
+          'VolunteerLayout - Not authenticated, redirecting to login'
+        );
         router.push('/login');
         return;
       }
 
       if (user && user.role !== 'trainer') {
         console.log(
-          'TrainerLayout - Not trainer, redirecting to appropriate page'
+          'VolunteerLayout - Not volunteer, redirecting to appropriate page'
         );
         if (user.role === 'admin') {
           router.push('/admin');
@@ -48,12 +50,12 @@ export function TrainerLayout({ children }: TrainerLayoutProps) {
 
       // If we have a token but no user yet, wait a bit more
       if (token && !user) {
-        console.log('TrainerLayout - Has token but no user, waiting...');
+        console.log('VolunteerLayout - Has token but no user, waiting...');
         setTimeout(checkAccess, 200);
         return;
       }
 
-      console.log('TrainerLayout - Access granted');
+      console.log('VolunteerLayout - Access granted');
       setIsChecking(false);
     };
 
@@ -70,7 +72,7 @@ export function TrainerLayout({ children }: TrainerLayoutProps) {
             <p className="text-sm text-muted-foreground">
               {token && !user
                 ? 'Loading user information...'
-                : 'Checking trainer permissions...'}
+                : 'Checking volunteer permissions...'}
             </p>
           </div>
         </div>
@@ -90,7 +92,7 @@ export function TrainerLayout({ children }: TrainerLayoutProps) {
             <p className="text-muted-foreground">
               {!user
                 ? 'User information not available.'
-                : "You don't have permission to access this page. Trainer privileges are required."}
+                : "You don't have permission to access this page. Volunteer privileges are required."}
             </p>
             <div className="space-y-2">
               {user?.role === 'admin' && (

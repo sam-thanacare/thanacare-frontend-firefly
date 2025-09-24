@@ -62,9 +62,9 @@ interface UserWithProfile {
   user: User;
   organization?: Organization;
   family?: Family;
-  families?: Family[]; // For trainers - families they manage
+  families?: Family[]; // For volunteers - families they manage
   members?: User[]; // For families - members in the family
-  trainer?: User; // For members - the trainer associated with their family
+  trainer?: User; // For members - the volunteer associated with their family
 }
 
 export function UsersTable() {
@@ -114,10 +114,10 @@ export function UsersTable() {
       const userWithProfile: UserWithProfile = { user };
 
       try {
-        // For trainers, fetch organization and families they manage
+        // For volunteers, fetch organization and families they manage
         if (user.role === 'trainer') {
           try {
-            // Fetch families directly assigned to this trainer
+            // Fetch families directly assigned to this volunteer
             const familiesResponse = await fetch(
               `${backendUrl}/api/trainers/${user.id}/families`,
               {
@@ -209,23 +209,23 @@ export function UsersTable() {
 
                 userWithProfile.families = enhancedFamilies;
               } else {
-                // No families found for this trainer
+                // No families found for this volunteer
                 userWithProfile.families = [];
                 userWithProfile.organization = undefined;
               }
             } else {
-              console.warn('Failed to fetch families for trainer:', user.id);
+              console.warn('Failed to fetch families for volunteer:', user.id);
               userWithProfile.families = [];
               userWithProfile.organization = undefined;
             }
           } catch (error) {
-            console.error('Error fetching trainer data:', error);
+            console.error('Error fetching volunteer data:', error);
             userWithProfile.organization = undefined;
             userWithProfile.families = [];
           }
         }
 
-        // For members, fetch family details and trainer information
+        // For members, fetch family details and volunteer information
         if (user.role === 'member') {
           // Get all families to find which one this member belongs to
           const familiesResponse = await fetch(`${backendUrl}/api/families`, {
@@ -266,8 +266,8 @@ export function UsersTable() {
                   .slice(0, 5);
               }
 
-              // Fetch trainer information for this family
-              // Get all users to find the trainer associated with this family's organization
+              // Fetch volunteer information for this family
+              // Get all users to find the volunteer associated with this family's organization
               const usersForTrainerResponse = await fetch(
                 `${backendUrl}/api/admin/users`,
                 {
@@ -283,13 +283,13 @@ export function UsersTable() {
                   await usersForTrainerResponse.json();
                 const allUsersForTrainer = usersForTrainerData.data || [];
 
-                // Find trainers (simplified logic - in real implementation you'd query by organization)
+                // Find volunteers (simplified logic - in real implementation you'd query by organization)
                 const trainers = allUsersForTrainer.filter(
                   (u: User) => u.role === 'trainer'
                 );
                 if (trainers.length > 0) {
-                  // For demo purposes, show the first trainer
-                  // In real implementation, you'd find the trainer associated with the family's organization
+                  // For demo purposes, show the first volunteer
+                  // In real implementation, you'd find the volunteer associated with the family's organization
                   userWithProfile.trainer = trainers[0];
                 }
               }
@@ -707,7 +707,7 @@ export function UsersTable() {
                               No Families Assigned
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              This trainer doesn&apos;t have any families
+                              This volunteer doesn&apos;t have any families
                               assigned yet.
                             </p>
                           </div>
@@ -721,7 +721,7 @@ export function UsersTable() {
                             Loading Family Data...
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            Fetching family information for this trainer.
+                            Fetching family information for this volunteer.
                           </p>
                         </div>
                       </div>
@@ -761,7 +761,7 @@ export function UsersTable() {
                     <div className="mt-4 space-y-2">
                       <h5 className="font-medium text-sm flex items-center space-x-2">
                         <Shield className="h-4 w-4" />
-                        <span>Assigned Trainer</span>
+                        <span>Assigned Volunteer</span>
                       </h5>
                       <div className="bg-background p-3 rounded border">
                         <div className="flex items-center space-x-3">

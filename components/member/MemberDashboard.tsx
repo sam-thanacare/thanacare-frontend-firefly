@@ -418,7 +418,7 @@ export function MemberDashboard() {
                 Welcome back, {user?.name}!
               </h1>
               <p className="text-muted-foreground">
-                Here&apos;s an overview of your dementia care planning journey
+                Here&apos;s an overview of your firefly care planning journey
               </p>
             </div>
           </div>
@@ -430,7 +430,7 @@ export function MemberDashboard() {
           <div>
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <BookOpen className="h-5 w-5 text-primary" />
-              Dementia Care Planning
+              firefly Care Planning
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card className="bg-gradient-to-br from-muted/30 to-muted/50 border-muted/50">
@@ -601,10 +601,10 @@ export function MemberDashboard() {
               <div className="p-1 rounded bg-primary/10">
                 <FileText className="h-5 w-5 text-primary" />
               </div>
-              Dementia Care Planning Documents
+              firefly Care Planning Documents
             </CardTitle>
             <CardDescription>
-              Your assigned dementia care planning documents and their current
+              Your assigned firefly care planning documents and their current
               status
             </CardDescription>
           </CardHeader>
@@ -701,9 +701,9 @@ export function MemberDashboard() {
                     No Documents Assigned
                   </h3>
                   <p className="text-gray-500 mb-4">
-                    You don&apos;t have any dementia tool documents assigned
-                    yet. Your trainer will assign documents when they&apos;re
-                    ready for you to complete.
+                    You don&apos;t have any firefly tool documents assigned yet.
+                    Your volunteer will assign documents when they&apos;re ready
+                    for you to complete.
                   </p>
                 </div>
               )}
@@ -826,7 +826,7 @@ export function MemberDashboard() {
                   </h3>
                   <p className="text-purple-600 mb-4">
                     You don&apos;t have any Firefly Documents assigned yet. Your
-                    trainer will assign documents when they&apos;re ready for
+                    volunteer will assign documents when they&apos;re ready for
                     you to complete.
                   </p>
                 </div>
@@ -857,7 +857,7 @@ export function MemberDashboard() {
               onClick={() => router.push('/member/documents')}
             >
               <FileText className="h-6 w-6 text-primary" />
-              Dementia Documents
+              firefly Documents
             </Button>
             <Button
               variant="outline"

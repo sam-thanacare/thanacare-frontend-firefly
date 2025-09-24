@@ -299,7 +299,7 @@ export default function DocumentFillPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div>
                   <span className="font-medium text-muted-foreground">
-                    Trainer:
+                    Volunteer:
                   </span>
                   <p className="font-medium">
                     {assignment?.trainer?.name || 'Loading...'}

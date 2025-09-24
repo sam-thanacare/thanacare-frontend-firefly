@@ -37,7 +37,7 @@ export default function Dashboard() {
       case 'admin':
         return 'Administrator';
       case 'trainer':
-        return 'Healthcare Trainer';
+        return 'Healthcare Volunteer';
       case 'member':
         return 'Family Member';
       default:

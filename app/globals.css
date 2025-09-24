@@ -5,8 +5,8 @@
 
 @theme inline {
   /* Brand Colors */
-  --traverse-magenta: var(--traverse-magenta);
-  --infinity-pink: var(--infinity-pink);
+  --main-color: var(--main-color);
+  --secondary-color: var(--secondary-color);
   --pure-white: var(--pure-white);
   --xiketic: var(--xiketic);
   --space-blue: var(--space-blue);
@@ -57,8 +57,8 @@
   --radius: 0.625rem;
 
   /* Thanacare Brand Colors */
-  --traverse-magenta: #a616bd;
-  --infinity-pink: #d14398;
+  --main-color: #00b2a9;
+  --secondary-color: #ff8200;
   --pure-white: #ffffff;
   --xiketic: #1e2739;
   --space-blue: #415376;
@@ -72,31 +72,31 @@
   --card-foreground: var(--xiketic);
   --popover: var(--pure-white);
   --popover-foreground: var(--xiketic);
-  --primary: var(--traverse-magenta);
+  --primary: var(--main-color);
   --primary-foreground: var(--pure-white);
-  --secondary: var(--stone);
-  --secondary-foreground: var(--xiketic);
+  --secondary: var(--secondary-color);
+  --secondary-foreground: var(--pure-white);
   --muted: #f8f9fa;
   --muted-foreground: var(--space-blue);
-  --accent: var(--infinity-pink);
+  --accent: var(--secondary-color);
   --accent-foreground: var(--pure-white);
   --destructive: #dc2626;
   --border: var(--stone);
   --input: var(--stone);
-  --ring: var(--traverse-magenta);
-  --chart-1: var(--traverse-magenta);
-  --chart-2: var(--infinity-pink);
+  --ring: var(--main-color);
+  --chart-1: var(--main-color);
+  --chart-2: var(--secondary-color);
   --chart-3: var(--slate);
   --chart-4: var(--space-blue);
   --chart-5: var(--xiketic);
   --sidebar: #fafbfc;
   --sidebar-foreground: var(--xiketic);
-  --sidebar-primary: var(--traverse-magenta);
+  --sidebar-primary: var(--main-color);
   --sidebar-primary-foreground: var(--pure-white);
-  --sidebar-accent: var(--infinity-pink);
+  --sidebar-accent: var(--secondary-color);
   --sidebar-accent-foreground: var(--pure-white);
   --sidebar-border: var(--stone);
-  --sidebar-ring: var(--traverse-magenta);
+  --sidebar-ring: var(--main-color);
 }
 
 .dark {
@@ -107,31 +107,31 @@
   --card-foreground: var(--pure-white);
   --popover: #2a3441;
   --popover-foreground: var(--pure-white);
-  --primary: var(--infinity-pink);
+  --primary: var(--main-color);
   --primary-foreground: var(--pure-white);
-  --secondary: var(--space-blue);
+  --secondary: var(--secondary-color);
   --secondary-foreground: var(--pure-white);
   --muted: #3a4552;
   --muted-foreground: var(--stone);
-  --accent: var(--traverse-magenta);
+  --accent: var(--secondary-color);
   --accent-foreground: var(--pure-white);
   --destructive: #ef4444;
   --border: var(--space-blue);
   --input: var(--space-blue);
-  --ring: var(--infinity-pink);
-  --chart-1: var(--infinity-pink);
-  --chart-2: var(--traverse-magenta);
+  --ring: var(--main-color);
+  --chart-1: var(--main-color);
+  --chart-2: var(--secondary-color);
   --chart-3: var(--slate);
   --chart-4: var(--space-blue);
   --chart-5: var(--stone);
   --sidebar: #1e2739;
   --sidebar-foreground: var(--pure-white);
-  --sidebar-primary: var(--infinity-pink);
+  --sidebar-primary: var(--main-color);
   --sidebar-primary-foreground: var(--pure-white);
-  --sidebar-accent: var(--traverse-magenta);
+  --sidebar-accent: var(--secondary-color);
   --sidebar-accent-foreground: var(--pure-white);
   --sidebar-border: var(--space-blue);
-  --sidebar-ring: var(--infinity-pink);
+  --sidebar-ring: var(--main-color);
 }
 
 @layer base {

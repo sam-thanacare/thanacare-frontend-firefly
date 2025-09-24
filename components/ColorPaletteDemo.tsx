@@ -13,14 +13,14 @@ import { brandColors } from '@/lib/config/colors';
 export function ColorPaletteDemo() {
   const primaryColors = [
     {
-      name: 'Traverse Magenta',
-      value: brandColors.traverseMagenta,
-      class: 'bg-traverse-magenta',
+      name: 'Main Color',
+      value: brandColors.mainColor,
+      class: 'bg-main-color',
     },
     {
-      name: 'Infinity Pink',
-      value: brandColors.infinityPink,
-      class: 'bg-infinity-pink',
+      name: 'Secondary Color',
+      value: brandColors.secondaryColor,
+      class: 'bg-secondary-color',
     },
     {
       name: 'Pure White',
